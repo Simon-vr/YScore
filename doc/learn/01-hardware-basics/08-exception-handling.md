@@ -1,9 +1,13 @@
-# 08. 内部异常通路（ecall / ebreak）
+---
+permalink: /learn/01-hardware-basics/08-exception-handling/
+lang: en
+---
+# 08. Internal Exception Path (ecall / ebreak)
 
-## 1. 异常识别
+## 1. Exception Recognition
 
-`src/ctl_ifid.v:103-125` 处理 `OP_CSR` 且 `funct3 == FUNC3_EXCP`（000）的情况，
-用 `imm`（即 funct12）区分：
+`src/ctl_ifid.v:103-125` handles the case of `OP_CSR` with `funct3 == FUNC3_EXCP` (000),
+distinguishing them using `imm` (i.e. funct12):
 
 ```verilog
 F12_ECALL:  is_excp = 1'b1; excp_cause = EXCP_CAUSE_ECALL;  // 11
@@ -11,7 +15,7 @@ F12_EBREAK: is_excp = 1'b1; excp_cause = EXCP_CAUSE_EBREAK; // 3
 F12_MRET:   is_mret = 1'b1; is_excp = 1'b0;
 ```
 
-宏定义在 `src/rvdef.vh:110-128`：
+The macros are defined in `src/rvdef.vh:110-128`:
 
 ```verilog
 `define F12_ECALL   12'h000
@@ -21,28 +25,28 @@ F12_MRET:   is_mret = 1'b1; is_excp = 1'b0;
 `define EXCP_CAUSE_ECALL   32'd11
 ```
 
-## 2. 异常通道（core_ctl.v:386-389）
+## 2. Exception Path (core_ctl.v:386-389)
 
-ID 阶段把异常信息锁存进 `excp_token / excp_ismret / excp_cause`：
+The ID stage latches the exception information into `excp_token / excp_ismret / excp_cause`:
 
 ```verilog
 if_token<=0; ifid_token<=1;
-excp_token  <= ifid_ecall_w;   // ecall/ebreak 置 1
+excp_token  <= ifid_ecall_w;   // ecall/ebreak set to 1
 excp_ismret <= ifid_mret_w;
 excp_cause  <= ifid_mcause_w;
 excp_mtval  <= 32'd0;
 ```
 
-`excp_token` 一直保持到下一个指令的 ID 拍，期间驱动：
-- `core_wb` 的 `csr_wen = 010`（异常写 CSR）。
-- `wb_mux_pc` 的重定向：`excp_token → nextpc = mtvec`。
+`excp_token` remains held until the next instruction's ID beat, during which it drives:
+- `core_wb`'s `csr_wen = 010` (exception CSR write).
+- `wb_mux_pc`'s redirect: `excp_token → nextpc = mtvec`.
 
-## 3. 异常时的 CSR 写入（regfile_csr.v:63-71）
+## 3. CSR Writes on Exception (regfile_csr.v:63-71)
 
 ```verilog
 else if (perips_token==1 && wen == 3'b010) begin
     intrpt <= 1'b0;
-    csr[5] <= pc;            // mepc = ecall/ebreak 自身地址
+    csr[5] <= pc;            // mepc = address of the ecall/ebreak instruction itself
     csr[6] <= excp_cause;    // mcause = 11 / 3
     csr[7] <= excp_mtval;    // mtval = 0
     csr[0][7] <= csr[0][3];  // MPIE = MIE
@@ -50,30 +54,30 @@ else if (perips_token==1 && wen == 3'b010) begin
 end
 ```
 
-注意：**mepc 保存 `pc`（异常指令自身地址）**，而不是 nextpc——
-ecall/ebreak 的"下一指令"语义由软件负责：trap 处理里 `mepc+4` 跳过异常指令。
+Note: **mepc saves `pc` (the address of the exception instruction itself)**, not nextpc —
+the "next instruction" semantics of ecall/ebreak is handled by software: in the trap handler, `mepc+4` skips the exception instruction.
 
-## 4. 重定向与返回
+## 4. Redirect and Return
 
-- **进入**：`wb_mux_pc` 在 `excp_token` 有效时 `nextpc = mtvec`，WB 采样拍写入 `wb_pc`。
-- **返回**：软件在 trap handler 里 `csrw mepc` 改返回地址后 `mret`，
-  硬件 `wen==011` 使 `MIE <= MPIE`，`wb_mux_pc` 里 `is_mret → nextpc = mepc`。
+- **Enter**: `wb_mux_pc` sets `nextpc = mtvec` while `excp_token` is valid, and `wb_pc` is written on the WB sample beat.
+- **Return**: software does `csrw mepc` in the trap handler to change the return address, then `mret`;
+  hardware's `wen==011` sets `MIE <= MPIE`, and in `wb_mux_pc` `is_mret → nextpc = mepc`.
 
-## 5. 中断与异常的差别（重要）
+## 5. Difference Between Interrupts and Exceptions (Important)
 
-| | ecall/ebreak（异常） | 定时器中断 |
+| | ecall/ebreak (exception) | timer interrupt |
 |---|---|---|
-| mcause | 11 / 3 | 0x80000007（最高位=1） |
-| mepc | `pc`（异常指令地址，软件 +4） | `nextpc`（被中断指令的真实下一 PC） |
-| 软件动作 | trap 里 `mepc+4` | 不需要动 mepc |
-| 触发源 | 指令本身（同步） | mtip 外部（异步） |
+| mcause | 11 / 3 | 0x80000007 (highest bit = 1) |
+| mepc | `pc` (exception instruction address, software +4) | `nextpc` (true next PC of the interrupted instruction) |
+| software action | `mepc+4` in trap | no need to touch mepc |
+| trigger source | the instruction itself (synchronous) | mtip external (asynchronous) |
 
-`rtos/port/portASM.S:20` 用 `mcause` 的符号位区分：
-`bge a0, x0, synchronous_exception`（mcause[31]==0 是异常，==1 是中断）。
+`rtos/port/portASM.S:20` uses the sign bit of `mcause` to distinguish:
+`bge a0, x0, synchronous_exception` (mcause[31]==0 is an exception, ==1 is an interrupt).
 
-## 6. 测试：ins/except.s
+## 6. Test: ins/except.s
 
-`ins/except.s` 自带 trap handler：
+`ins/except.s` comes with its own trap handler:
 
 ```asm
 la t0,trap_handler
@@ -86,7 +90,7 @@ after_ebreak: ...
 trap_handler:
     csrr t0,mcause
     li t1,11
-    beq t0,t1,handle_ecall     # 区分两种异常
+    beq t0,t1,handle_ecall     # distinguish the two exceptions
     li t1,3
     beq t0,t1,handle_ebreak
     j fail
@@ -94,15 +98,15 @@ handle_ecall:
     addi s0,s0,1
     csrr t2,mepc
     addi t2,t2,4
-    csrw mepc,t2              # mepc+4 跳过 ecall
+    csrw mepc,t2              # mepc+4 skips the ecall
     mret
 ```
 
-验证：`s0` 累加 1、2，最终 x31=1 表示 ecall 和 ebreak 都正确触发并返回。
+Verification: `s0` accumulates 1, 2; finally x31=1 means both ecall and ebreak triggered and returned correctly.
 
-## 7. 易错点
+## 7. Pitfalls
 
-- **mepc 语义**：异常保存 `pc`（软件 +4），中断保存 `nextpc`——两者不能混淆，
-  混淆的后果就是"返回地址错位"（见 03-debug-pitfalls/03）。
-- **MBIT**：中断的 mcause 最高位必须是 1（`0x80000007`），软件靠它区分路径。
-- **trap handler 里不能再开中断**：硬件已把 MIE 清 0，软件在返回前保持关中断。
+- **mepc semantics**: exceptions save `pc` (software +4), interrupts save `nextpc` — the two must not be confused;
+  confusing them results in a "misaligned return address" (see 03-debug-pitfalls/03).
+- **MBIT**: the highest bit of the interrupt mcause must be 1 (`0x80000007`); software relies on it to distinguish the path.
+- **Do not re-enable interrupts inside the trap handler**: hardware has already cleared MIE to 0; software must keep interrupts disabled before returning.

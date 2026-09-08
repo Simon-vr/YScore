@@ -1,82 +1,91 @@
-# 01. 硬件部分踩坑：内存实现
+---
+permalink: /learn/03-debug-pitfalls/01-hardware-pitfalls/
+lang: en
+---
+# 01. Hardware Pitfalls: Memory Implementation
 
-本文完整记录 `mem_ctl.v` 数据存储器的设计演进与三个真实踩坑点。
-对应 `doc/todo.md` 里"debug 踩坑指南 - 硬件部分"。
+This article fully records the design evolution of the `mem_ctl.v` data memory and three
+real pitfalls encountered.
 
-## 1. 需求与第一版（失败）
+## 1. Requirements and the First Version (failed)
 
-CPU 需要按字节寻址的 8/16/32 位读写（SB/SH/SW、LB/LH/LW），
-且地址可能**不对齐**（RISC-V 允许不对齐的半字/字节访问，本项目直接支持）。
+The CPU needs byte-addressable 8/16/32-bit reads/writes (SB/SH/SW, LB/LH/LW), and addresses
+may be **unaligned** (RISC-V allows unaligned half-word/byte access; this project supports it directly).
 
-第一版实现：直接用一个 32 位宽的 RAM，`adr[1:0]` 做偏移选择。
-**问题**：M9K（Altera Cyclone IV 的片上 RAM）是 9 位位宽、单口的，
-一个 32 位宽 RAM 要么占 4 块 M9K 还不好做字节写使能，要么异步读（见坑 2）。
+The first version used a single 32-bit-wide RAM with `adr[1:0]` as the offset selector.
+**Problem**: M9K (the on-chip RAM of Altera Cyclone IV) is 9 bits wide and single-port, so a
+32-bit-wide RAM either occupies 4 M9K blocks and still has trouble doing byte write-enables,
+or it must use async reads (see pitfall B).
 
-## 2. 踩坑记录
+## 2. Pitfall Records
 
-### 坑 A：8 位对齐 / 32 位读写 —— 滚筒式 4×8bit bank
+### Pitfall A: 8-bit alignment / 32-bit read-write — barrel-style 4×8bit banks
 
-**现象**：8/16 位读写错乱，32 位没问题。
+**Symptom**: 8/16-bit read/write is corrupted; 32-bit is fine.
 
-**第一次尝试**：直接用一个 32 位 RAM + 偏移选择字节。
-综合后字节写使能很难映射到 M9K。
+**First attempt**: directly use a 32-bit RAM + offset to select bytes. After synthesis, the
+byte write-enable is hard to map onto M9K.
 
-**受 RAID 启发**：改成 **4 个独立的 8 位存储单元**（`mem_cell.v`，深度 6144/每个），
-每个单元只管一个字节，用 `we[3:0]` 独立控制写。24KB = 4 × 6KB。
+**Inspired by RAID**: switched to **4 independent 8-bit memory cells** (`mem_cell.v`, depth
+6144 each), where each cell handles one byte and `we[3:0]` independently controls writes.
+24KB = 4 × 6KB.
 
-关键点（`mem_ctl.v`）：
+Key points (`mem_ctl.v`):
 
-- **写使能**按 `wen`（SB/SH/SW）与 `offset`（`adr[1:0]`）生成（`mem_ctl.v:19-33`）。
-- **写入数据**桶形左移，让每个字节落到正确 bank（`mem_ctl.v:36-50`）。
-- **读回**桶形右移还原（`mem_ctl.v:134-149`）。
-- **字节地址**：`mem_addr[i] = base + ((offset+i)>=4)`，处理跨字边界（`mem_ctl.v:52-88`）。
+- **Write-enable** is generated from `wen` (SB/SH/SW) and `offset` (`adr[1:0]`) (`mem_ctl.v:19-33`).
+- **Write data** is barrel-shifted left so each byte lands in the correct bank (`mem_ctl.v:36-50`).
+- **Readback** is barrel-shifted right to restore (`mem_ctl.v:134-149`).
+- **Byte address**: `mem_addr[i] = base + ((offset+i)>=4)`, handling cross-word boundaries (`mem_ctl.v:52-88`).
 
-### 坑 B：综合时间过长 —— 异步读无法映射 M9K
+### Pitfall B: Synthesis too slow — async read cannot map to M9K
 
-**现象**：4 bank 组合后综合时间剧增，甚至不收敛。
+**Symptom**: combining the 4 banks causes synthesis time to explode, sometimes not converging.
 
-**根因**：第一版 `mem_cell` 用组合逻辑直接读 `memory[addr]`（异步读）。
-M9K 是同步 RAM，异步读无法映射，综合器只能退化成 LUT/寄存器阵列，
-占大量逻辑 → 综合爆炸。
+**Root cause**: the first `mem_cell` used combinational logic to read `memory[addr]` directly
+(async read). M9K is a synchronous RAM, so async reads cannot be mapped; the synthesizer can
+only degrade to LUT/register arrays, consuming a huge amount of logic → synthesis explosion.
 
-**修复**：`mem_cell.v:17-22` 改成**同步读**：
+**Fix**: `mem_cell.v:17-22` switched to **synchronous read**:
 
 ```verilog
 always @(posedge clk) begin
     if (mem_write) memory[addr] <= data_in;
-    data_out <= memory[addr];      // 同步读，一拍延迟
+    data_out <= memory[addr];      // synchronous read, one-cycle delay
 end
 ```
 
-代价是读多一拍——由流水线 PERIPS 阶段的 `mem_done_r` 固定一拍补偿
-（`core_perips.v:48-63`）。
+The cost is one extra cycle of read latency — compensated by the fixed one-cycle `mem_done_r`
+in the pipeline's PERIPS stage (`core_perips.v:48-63`).
 
-### 坑 C：滚筒掩码写错一位 —— 通过 LS.s 测试后 test.c 暴露
+### Pitfall C: Barrel mask off by one bit — exposed by test.c after LS.s passes
 
-**现象**：`ins/LS.s`（基本 SW/LW/SH/LHU/SB/LBU）全过，
-但跑 `ins/test.c`（C 程序，栈上数组混合访问）结果错。
+**Symptom**: `ins/LS.s` (basic SW/LW/SH/LHU/SB/LBU) all pass, but running `ins/test.c`
+(a C program with mixed access to on-stack arrays) gives wrong results.
 
-**排查过程**（todo.md 记录的完整流程）：
+**Troubleshooting process**:
 
-1. **看波形图**：ModelSim 里找到"跑崩的位置"。
-2. **拿到 PC**：从波形/tb 打印得到出错的 PC。
-3. **找反汇编**：`objdump -d` 定位该 PC 对应的 C 源码行。
-4. **判断是访存问题**：出错指令是栈上 load/store。
-5. **检查 .mem 文件**：imem.mem / dmem0~3.mem 内容正确（不是初始化问题）。
-6. **检查硬件通路**：逐位核对 `mem_ctl.v` 的写使能/移位/地址生成。
+1. **Look at the waveform**: locate the "crash point" in ModelSim.
+2. **Get the PC**: obtain the faulting PC from the waveform/tb printout.
+3. **Find the disassembly**: `objdump -d` to locate the C source line for that PC.
+4. **Determine it is a memory-access problem**: the faulting instruction is an on-stack load/store.
+5. **Check the .mem files**: the contents of imem.mem / dmem0~3.mem are correct (not an init problem).
+6. **Check the hardware path**: verify the write-enable/shift/address generation in `mem_ctl.v` bit by bit.
 
-**根因**：`SH`（半字）在 `offset==2'b11`（地址 `...11`，跨字边界）时，
-写使能应为 `4'b1001`（第 0 字节落在下一字，第 1 字节落在本字高位）。
-`mem_ctl.v:27` 的 case 里这一项一开始写成了 `4'b1000`——**掩码错一位**。
+**Root cause**: for `SH` (half-word) at `offset==2'b11` (address `...11`, crossing the word
+boundary), the write-enable should be `4'b1001` (byte 0 falls into the next word, byte 1 into
+the high bits of the current word). In the case at `mem_ctl.v:27` this entry was originally
+written as `4'b1000` — **the mask was off by one bit**.
 
-LS.s 的 SH 测试只用了 `offset==0`（`sh x5,4(x10)`，对齐），没覆盖跨字；
-test.c 的栈操作踩到了 `offset==3`，才暴露。
+The LS.s SH test only used `offset==0` (`sh x5,4(x10)`, aligned) and did not cover cross-word
+cases; the stack operations in test.c hit `offset==3`, exposing it.
 
-**修复**：改正 `mem_ctl.v:27` 的 `we = 4'b1001`。
+**Fix**: corrected `we = 4'b1001` at `mem_ctl.v:27`.
 
-## 3. 教训总结
+## 3. Lessons
 
-1. **对齐测试 ≠ 全覆盖测试**：要专门测不对齐（跨字边界）的 8/16 位访问。
-2. **异步读在 Altera M9K 上不成立**：片上 RAM 必须同步读，多拍的延迟用流水线节奏补偿。
-3. **定位"访存"类 bug 的流程**：波形拿 PC → 反汇编 → 排除 .mem → 查硬件掩码/移位/地址，
-   一步一个确认。
+1. **Aligned tests ≠ full coverage**: you must specifically test unaligned (cross-word
+   boundary) 8/16-bit accesses.
+2. **Async reads do not hold on Altera M9K**: on-chip RAM must be read synchronously; multi-cycle
+   latency is compensated by the pipeline rhythm.
+3. **Flow for locating "memory-access" bugs**: waveform to get PC → disassembly → rule out .mem →
+   check hardware mask/shift/address, confirming one step at a time.

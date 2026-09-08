@@ -1,21 +1,26 @@
-# 03. Debug 踩坑指南
+---
+permalink: /learn/03-debug-pitfalls/
+lang: en
+---
+# 03. Debug Pitfalls Guide
 
-这一部分是整个文档的**精华**，记录了本项目真实发生、逐个解决的 debug 过程。
+This part is the **essence** of the entire document, recording the real debug processes that
+occurred in this project and were resolved one by one.
 
 ```
 03-debug-pitfalls/
 ├── README.md
-├── 01-hardware-pitfalls.md   硬件部分踩坑（内存字节对齐 / 异步读 / 掩码位）
-├── 02-software-pitfalls.md   软件部分踩坑（UART 缓冲共享 / 输入所有权令牌）
-└── 03-hw-sw-co-debug.md      硬软结合 Debug 完整实录（本次对话中的 bug）
+├── 01-hardware-pitfalls.md   Hardware pitfalls (memory byte alignment / async read / mask bits)
+├── 02-software-pitfalls.md   Software pitfalls (UART buffer sharing / input ownership token)
+└── 03-hw-sw-co-debug.md      Full hardware-software combined Debug record (bugs in this session)
 ```
 
-## 按类型快速索引
+## Quick Index by Type
 
-| 想找的坑 | 所在章节 |
-|----------|----------|
-| 内存 8/16/32 位读写、滚筒式 bank、掩码位错 | 01 |
-| 异步读无法综合成 M9K、改同步读 | 01 |
-| Shell/Game 共享 UART 缓冲、令牌机制 | 02 |
-| "输入 help 返回 banner"、"输出后卡死"、LED 状态诊断 | 03 |
-| WB 退休拍非幂等、MPIE 被踏零、中断保存 nextpc | 03 |
+| Pitfall to look for                              | Chapter |
+|--------------------------------------------------|---------|
+| 8/16/32-bit memory access, barrel banks, mask-bit error | 01 |
+| Async read cannot be synthesized into M9K, changed to sync read | 01 |
+| Shell/Game sharing the UART buffer, token mechanism | 02 |
+| "Typing help returns banner", "hang after output", LED-state diagnosis | 03 |
+| WB retire stage non-idempotent, MPIE overwritten to 0, interrupt saves nextpc | 03 |

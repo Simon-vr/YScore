@@ -1,26 +1,30 @@
-# 04. 分支指令
+---
+permalink: /learn/01-hardware-basics/04-branch-instructions/
+lang: en
+---
+# 04. Branch Instructions
 
-## 1. 编码定义
+## 1. Encoding Definition
 
-B 型 opcode = `7'b1100011`，funct3 区分 BEQ/BNE/BLT/BGE/BLTU/BGEU（`src/rvdef.vh:82-87`）。
-分支立即数布局特殊：
+B-type opcode = `7'b1100011`, funct3 distinguishes BEQ/BNE/BLT/BGE/BLTU/BGEU (`src/rvdef.vh:82-87`).
+The branch immediate layout is special:
 
 ```verilog
 // src/core_id.v:23
 wire [11:0] branch_offset = {ins[31], ins[7], ins[30:25], ins[11:8]};
 ```
 
-在 `src/ifid_immex.v:24` 扩展成 32 位并左移一位（×2）：
+In `src/ifid_immex.v:24` it is extended to 32 bits and shifted left by one (×2):
 
 ```verilog
 assign ebranch_offset = {{19{branch_offset[11]}}, branch_offset, 1'b0};
 ```
 
-## 2. 数据通路
+## 2. Data Path
 
-### 2.1 ALU：做减法比较
+### 2.1 ALU: Subtraction Comparison
 
-`src/ctl_exe.v:67-78` 分支指令统一 `alu_func = ALU_SUB`，用 rs1 - rs2 产生比较标志：
+`src/ctl_exe.v:67-78` uniformly sets `alu_func = ALU_SUB` for branch instructions, using rs1 - rs2 to produce comparison flags:
 
 ```verilog
 OP_BRANCH: begin
@@ -36,71 +40,71 @@ OP_BRANCH: begin
 end
 ```
 
-### 2.2 标志位（src/exe_alu.v:34-39）
+### 2.2 Flags (src/exe_alu.v:34-39)
 
-`exe_alu` 输出 4 个标志供 `exe_next` 判定：
+`exe_alu` outputs 4 flags for `exe_next` to evaluate:
 
 ```verilog
-zero     = (res == 32'b0);          // rs1==rs2（对 SUB 即差为 0）
-sign     = res[31];                 // 结果的符号位
-carry    = (func==SUB) ? ~res[32] : res[32]; // 无符号比较用（借位取反）
-overflow = low_res[31] ^ res[32];   // 有符号溢出
+zero     = (res == 32'b0);          // rs1==rs2 (for SUB, the difference is 0)
+sign     = res[31];                 // sign bit of the result
+carry    = (func==SUB) ? ~res[32] : res[32]; // used for unsigned comparison (borrow inverted)
+overflow = low_res[31] ^ res[32];   // signed overflow
 ```
 
-### 2.3 下一 PC 判定（src/exe_next.v）
+### 2.3 Next PC Evaluation (src/exe_next.v)
 
-`exe_next` 用 `next_func` + 标志位决定下一 PC：
+`exe_next` uses `next_func` + the flags to decide the next PC:
 
 ```verilog
 NEXT_BEQ:  if (zero==1)      next_pc = cur_pc + branch_offset;
            else              next_pc = cur_pc + 4;
-NEXT_BLT:  if (sign^overflow) next_pc = cur_pc + branch_offset;   // 有符号小于
+NEXT_BLT:  if (sign^overflow) next_pc = cur_pc + branch_offset;   // signed less-than
            else              next_pc = cur_pc + 4;
-NEXT_BLTU: if (carry==0)      next_pc = cur_pc + branch_offset;   // 无符号小于
+NEXT_BLTU: if (carry==0)      next_pc = cur_pc + branch_offset;   // unsigned less-than
            else              next_pc = cur_pc + 4;
 ```
 
-有符号比较 `BLT/BGE` 用 `sign ^ overflow`（即真结果为负），
-无符号比较 `BLTU/BGEU` 用 `carry`（借位）。
+Signed comparisons `BLT/BGE` use `sign ^ overflow` (i.e. the true result is negative),
+unsigned comparisons `BLTU/BGEU` use `carry` (borrow).
 
-## 3. 控制通路要点
+## 3. Control Path Highlights
 
-- 分支**不写寄存器**（`src/ctl_wb.v` 无 OP_BRANCH case，`reg_write=0`）。
-- 分支**不访存**（`ctl_perips.v` 无 OP_BRANCH case，`peripsen=0`），PERIPS 透传。
-- 下一 PC 的最终选择在 `src/wb_mux_pc.v`：
+- Branches **do not write registers** (`src/ctl_wb.v` has no OP_BRANCH case, `reg_write=0`).
+- Branches **do not access memory** (`ctl_perips.v` has no OP_BRANCH case, `peripsen=0`), PERIPS passes through.
+- The final selection of the next PC is in `src/wb_mux_pc.v`:
 
 ```verilog
 if (excp_token)   nextpc = mtvec;
 else if (is_mret) nextpc = mepc;
 else if (intrpt)  nextpc = mtvec;
-else              nextpc = perips_nextpc;   // 分支目标 / 顺序地址
+else              nextpc = perips_nextpc;   // branch target / sequential address
 ```
 
-正常分支走最后一项：`perips_nextpc` 就是 `exe_next` 算出的目标或 `cur_pc+4`。
-分支目标在 EXE 拍锁存进 `perips_nextpc`，WB 采样拍写入 `wb_pc`。
+Normal branches take the last item: `perips_nextpc` is the target computed by `exe_next` or `cur_pc+4`.
+The branch target is latched into `perips_nextpc` during the EXE beat, and written into `wb_pc` on the WB sample beat.
 
-## 4. 测试：ins/branch.s
+## 4. Test: ins/branch.s
 
-`ins/branch.s` 对 6 种分支都做了"跳对→继续，跳错→fail"的测试：
+`ins/branch.s` tests all 6 branch types with "jump correctly → continue, jump incorrectly → fail":
 
 ```asm
 li x31,0
-beq x5,x6,beq_ok        # x5==x6 → 应跳转
-beq x0,x0,fail          # 若上一跳没发生，x0==x0 无条件跳到 fail
+beq x5,x6,beq_ok        # x5==x6 → should jump
+beq x0,x0,fail          # if the previous jump didn't happen, x0==x0 unconditionally jumps to fail
 ...
-bgeu x5,x6,bgeu_ok      # 0xffffffff >= 1 无符号成立
+bgeu x5,x6,bgeu_ok      # 0xffffffff >= 1 is true unsigned
 pass:
 li x31,1
-pass_loop: beq x31,x31,pass_loop    # 死循环锁死 x31=1
+pass_loop: beq x31,x31,pass_loop    # infinite loop locks x31=1
 fail:
 li x31,0
 fail_loop: beq x31,x31,fail_loop
 ```
 
-看最终 x31：`1` = 全过，`0` = 失败。
+Look at the final x31: `1` = all passed, `0` = failed.
 
-## 5. 易错点
+## 5. Pitfalls
 
-- **有符号/无符号混淆**：BLT 用 `sign^overflow`，BLTU 用 `carry`，两者不能互换。
-- **分支偏移 ×2**：`ebranch_offset` 已左移一位，若忘记会在 `cur_pc + offset` 处错位。
-- **BGEU 特例**：`bgeu x5,x6` 在 x5=0xffffffff, x6=1 时应成立——无符号比较要正确处理全 1 数。
+- **Signed/unsigned confusion**: BLT uses `sign^overflow`, BLTU uses `carry`; the two cannot be interchanged.
+- **Branch offset ×2**: `ebranch_offset` is already shifted left by one; forgetting this will misalign at `cur_pc + offset`.
+- **BGEU special case**: `bgeu x5,x6` with x5=0xffffffff, x6=1 should hold — unsigned comparison must correctly handle all-ones numbers.

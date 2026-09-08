@@ -1,0 +1,128 @@
+{% assign lang = 'en' %}
+{% if page.url contains '/zh/' or page.url == '/zh/' %}{% assign lang = 'zh' %}{% endif %}
+<!DOCTYPE html>
+<html lang="{% if lang == 'zh' %}zh-CN{% else %}en{% endif %}">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% if page.title %}{{ page.title }} · {% endif %}{{ site.title }}</title>
+  <meta name="description" content="{{ page.description | default: site.description }}">
+  <link rel="stylesheet" href="{{ site.baseurl }}/assets/css/style.css">
+</head>
+<body>
+<header class="site-header">
+  <div class="header-inner">
+    <a class="brand" href="{{ site.baseurl }}{% if lang == 'zh' %}/zh/{% else %}/{% endif %}">
+      <span class="brand-name">YScore</span>
+      <span class="brand-tag">{% if lang == 'zh' %}从 0 写一个能跑 C 语言的 RV32I SoC{% else %}Write an RV32I SoC that runs C, from scratch{% endif %}</span>
+    </a>
+    <nav class="lang-switch" aria-label="Language">
+      {% if lang == 'zh' %}
+        <a href="{{ site.baseurl }}/" class="lang-link">English</a>
+        <span class="lang-sep">/</span>
+        <span class="lang-current">中文</span>
+      {% else %}
+        <span class="lang-current">English</span>
+        <span class="lang-sep">/</span>
+        <a href="{{ site.baseurl }}/zh/" class="lang-link">中文</a>
+      {% endif %}
+    </nav>
+  </div>
+</header>
+
+<div class="layout">
+  <nav class="sidebar" aria-label="Table of contents">
+    {% if lang == 'zh' %}
+    <ul class="nav">
+      <li><a href="{{ site.baseurl }}/zh/" {% if page.url == '/zh/' %}class="active"{% endif %}>首页</a></li>
+      <li><a href="{{ site.baseurl }}/zh/learn/00-project-overview/" {% if page.url contains '00-project-overview' %}class="active"{% endif %}>项目总览</a></li>
+      <li class="nav-group"><a href="{{ site.baseurl }}/zh/learn/01-hardware-basics/" {% if page.url contains '01-hardware-basics' %}class="active"{% endif %}>01 硬件基础</a>
+        <ul>
+          <li><a href="{{ site.baseurl }}/zh/learn/01-hardware-basics/00-design-flow/">设计流程</a></li>
+          <li><a href="{{ site.baseurl }}/zh/learn/01-hardware-basics/01-r-instructions/">R 指令</a></li>
+          <li><a href="{{ site.baseurl }}/zh/learn/01-hardware-basics/02-i-instructions/">I 指令</a></li>
+          <li><a href="{{ site.baseurl }}/zh/learn/01-hardware-basics/03-ls-instructions/">Load/Store</a></li>
+          <li><a href="{{ site.baseurl }}/zh/learn/01-hardware-basics/04-branch-instructions/">分支指令</a></li>
+          <li><a href="{{ site.baseurl }}/zh/learn/01-hardware-basics/05-other-instructions/">JAL/LUI/AUIPC</a></li>
+          <li><a href="{{ site.baseurl }}/zh/learn/01-hardware-basics/06-c-language-test/">C 语言测试</a></li>
+          <li><a href="{{ site.baseurl }}/zh/learn/01-hardware-basics/07-csr-implementation/">CSR 实现</a></li>
+          <li><a href="{{ site.baseurl }}/zh/learn/01-hardware-basics/08-exception-handling/">异常处理</a></li>
+          <li><a href="{{ site.baseurl }}/zh/learn/01-hardware-basics/09-axi-peripherals/">AXI 外设</a></li>
+          <li><a href="{{ site.baseurl }}/zh/learn/01-hardware-basics/10-uart-gpio-adaptation/">UART/GPIO</a></li>
+          <li><a href="{{ site.baseurl }}/zh/learn/01-hardware-basics/11-fpga-deployment/">FPGA 部署</a></li>
+          <li><a href="{{ site.baseurl }}/zh/learn/01-hardware-basics/12-tb-simulation-guide/">仿真指南</a></li>
+        </ul>
+      </li>
+      <li class="nav-group"><a href="{{ site.baseurl }}/zh/learn/02-software-stack/" {% if page.url contains '02-software-stack' %}class="active"{% endif %}>02 软件栈</a>
+        <ul>
+          <li><a href="{{ site.baseurl }}/zh/learn/02-software-stack/01-qemu-environment/">QEMU 环境</a></li>
+          <li><a href="{{ site.baseurl }}/zh/learn/02-software-stack/02-runtime-environment/">运行时环境</a></li>
+          <li><a href="{{ site.baseurl }}/zh/learn/02-software-stack/03-multitasking/">多任务</a></li>
+          <li><a href="{{ site.baseurl }}/zh/learn/02-software-stack/04-shell-implementation/">Shell</a></li>
+          <li><a href="{{ site.baseurl }}/zh/learn/02-software-stack/05-game-implementation/">Game</a></li>
+          <li><a href="{{ site.baseurl }}/zh/learn/02-software-stack/06-porting-guide/">移植指南</a></li>
+          <li><a href="{{ site.baseurl }}/zh/learn/02-software-stack/07-post-port-debug/">上板 Debug</a></li>
+        </ul>
+      </li>
+      <li class="nav-group"><a href="{{ site.baseurl }}/zh/learn/03-debug-pitfalls/" {% if page.url contains '03-debug-pitfalls' %}class="active"{% endif %}>03 Debug 踩坑</a>
+        <ul>
+          <li><a href="{{ site.baseurl }}/zh/learn/03-debug-pitfalls/01-hardware-pitfalls/">硬件坑</a></li>
+          <li><a href="{{ site.baseurl }}/zh/learn/03-debug-pitfalls/02-software-pitfalls/">软件坑</a></li>
+          <li><a href="{{ site.baseurl }}/zh/learn/03-debug-pitfalls/03-hw-sw-co-debug/">硬软联调实录</a></li>
+        </ul>
+      </li>
+    </ul>
+    {% else %}
+    <ul class="nav">
+      <li><a href="{{ site.baseurl }}/" {% if page.url == '/' %}class="active"{% endif %}>Home</a></li>
+      <li><a href="{{ site.baseurl }}/learn/00-project-overview/" {% if page.url contains '00-project-overview' %}class="active"{% endif %}>Project Overview</a></li>
+      <li class="nav-group"><a href="{{ site.baseurl }}/learn/01-hardware-basics/" {% if page.url contains '01-hardware-basics' %}class="active"{% endif %}>01 Hardware Basics</a>
+        <ul>
+          <li><a href="{{ site.baseurl }}/learn/01-hardware-basics/00-design-flow/">Design Flow</a></li>
+          <li><a href="{{ site.baseurl }}/learn/01-hardware-basics/01-r-instructions/">R Instructions</a></li>
+          <li><a href="{{ site.baseurl }}/learn/01-hardware-basics/02-i-instructions/">I Instructions</a></li>
+          <li><a href="{{ site.baseurl }}/learn/01-hardware-basics/03-ls-instructions/">Load/Store</a></li>
+          <li><a href="{{ site.baseurl }}/learn/01-hardware-basics/04-branch-instructions/">Branch</a></li>
+          <li><a href="{{ site.baseurl }}/learn/01-hardware-basics/05-other-instructions/">JAL/LUI/AUIPC</a></li>
+          <li><a href="{{ site.baseurl }}/learn/01-hardware-basics/06-c-language-test/">C Language Test</a></li>
+          <li><a href="{{ site.baseurl }}/learn/01-hardware-basics/07-csr-implementation/">CSR</a></li>
+          <li><a href="{{ site.baseurl }}/learn/01-hardware-basics/08-exception-handling/">Exceptions</a></li>
+          <li><a href="{{ site.baseurl }}/learn/01-hardware-basics/09-axi-peripherals/">AXI Peripherals</a></li>
+          <li><a href="{{ site.baseurl }}/learn/01-hardware-basics/10-uart-gpio-adaptation/">UART/GPIO</a></li>
+          <li><a href="{{ site.baseurl }}/learn/01-hardware-basics/11-fpga-deployment/">FPGA Deployment</a></li>
+          <li><a href="{{ site.baseurl }}/learn/01-hardware-basics/12-tb-simulation-guide/">Simulation Guide</a></li>
+        </ul>
+      </li>
+      <li class="nav-group"><a href="{{ site.baseurl }}/learn/02-software-stack/" {% if page.url contains '02-software-stack' %}class="active"{% endif %}>02 Software Stack</a>
+        <ul>
+          <li><a href="{{ site.baseurl }}/learn/02-software-stack/01-qemu-environment/">QEMU Environment</a></li>
+          <li><a href="{{ site.baseurl }}/learn/02-software-stack/02-runtime-environment/">Runtime Environment</a></li>
+          <li><a href="{{ site.baseurl }}/learn/02-software-stack/03-multitasking/">Multitasking</a></li>
+          <li><a href="{{ site.baseurl }}/learn/02-software-stack/04-shell-implementation/">Shell</a></li>
+          <li><a href="{{ site.baseurl }}/learn/02-software-stack/05-game-implementation/">Game</a></li>
+          <li><a href="{{ site.baseurl }}/learn/02-software-stack/06-porting-guide/">Porting Guide</a></li>
+          <li><a href="{{ site.baseurl }}/learn/02-software-stack/07-post-port-debug/">Post-port Debug</a></li>
+        </ul>
+      </li>
+      <li class="nav-group"><a href="{{ site.baseurl }}/learn/03-debug-pitfalls/" {% if page.url contains '03-debug-pitfalls' %}class="active"{% endif %}>03 Debug Pitfalls</a>
+        <ul>
+          <li><a href="{{ site.baseurl }}/learn/03-debug-pitfalls/01-hardware-pitfalls/">Hardware Pitfalls</a></li>
+          <li><a href="{{ site.baseurl }}/learn/03-debug-pitfalls/02-software-pitfalls/">Software Pitfalls</a></li>
+          <li><a href="{{ site.baseurl }}/learn/03-debug-pitfalls/03-hw-sw-co-debug/">HW/SW Co-debug</a></li>
+        </ul>
+      </li>
+    </ul>
+    {% endif %}
+  </nav>
+
+  <main class="content">
+    <article class="markdown-body">
+      {{ content }}
+    </article>
+    <footer class="site-footer">
+      {% if lang == 'zh' %}© YScore 文档{% else %}© YScore documentation{% endif %}
+    </footer>
+  </main>
+</div>
+</body>
+</html>

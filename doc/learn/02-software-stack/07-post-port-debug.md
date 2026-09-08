@@ -1,62 +1,71 @@
-# 07. 移植后 Debug 指南
+---
+permalink: /learn/02-software-stack/07-post-port-debug/
+lang: en
+---
+# 07. Post-Port Debug Guide
 
-本文是"软件已在 QEMU 上验证通过、移植到 FPGA 后出问题"的标准排查流程。
-对应本项目实际踩过的坑（详见 03-debug-pitfalls）。
+This article is the standard troubleshooting flow for "software verified on QEMU but
+misbehaving after porting to FPGA". It corresponds to the real pitfalls this project
+actually hit (see 03-debug-pitfalls).
 
-## 1. 核心原则
+## 1. Core Principle
 
-**二分法**：QEMU 行为正确 + FPGA 行为错误 → 问题在硬件；
-两者都错 → 问题在软件。这是移植后调试的第一判断。
+**Dichotomy**: QEMU behaves correctly + FPGA misbehaves → the problem is in the hardware;
+both misbehave → the problem is in the software. This is the first judgment after porting.
 
-## 2. 标准排查流程
+## 2. Standard Troubleshooting Flow
 
 ```
-上板发现有问题
+Found a problem on the board
    │
-   ├─ ① 判定层面：QEMU 跑同样代码是否也错？
-   │      ├─ 也错 → 软件 bug，回 QEMU 修（快）
-   │      └─ 只有 FPGA 错 → 硬件 bug，继续
+   ├─ ① Determine the level: does QEMU also misbehave on the same code?
+   │      ├─ also misbehaves → software bug, fix on QEMU (fast)
+   │      └─ only FPGA misbehaves → hardware bug, continue
    │
-   ├─ ② 收集现场：banner 打了吗？LED 亮几个/闪不闪？输入有回显吗？
-   │      （LED 状态是"CPU 是否跑过 gpio_init"的天然探针）
+   ├─ ② Collect the scene: was the banner printed? How many LEDs lit / blinking? Any input echo?
+   │      (LED state is a natural probe for "whether the CPU ran gpio_init")
    │
-   ├─ ③ 锁定指令：跑 ModelSim 仿真（sim.do），定位"跑崩的 PC / 最后一条正常指令", 看反汇编（map/dasm），
+   ├─ ③ Pin down the instruction: run ModelSim simulation (sim.do), locate the "crashing PC /
+   │      last normal instruction", look at the disassembly (map/dasm)
    │   
    │
-   ├─ ④ 看硬件数据/控制流：从 IF 到 WB 逐级查 ctl 控制信号与 data 值
+   ├─ ④ Inspect the hardware data/control flow: check the ctl control signals and data values
+   │      stage by stage from IF to WB
    │
-   └─ ⑤ 改一处 → 重新仿真/上板回归 → 循环
+   └─ ⑤ Change one thing → re-simulate / re-flash and re-test → loop
 ```
 
-## 3. 常见症状 → 嫌疑对照
+## 3. Common Symptom → Suspect Mapping
 
-| 症状                   | 优先嫌疑                                                        |
-| ---------------------- | --------------------------------------------------------------- |
-| 完全不打印 / 无 banner | 启动早期卡住：.bss/栈/mtvec/取指；或 GPIO 复位即亮              |
-| banner 有，输入无回显  | uart_rx 任务睡死（tick 中断没来）/ 输入所有权错                 |
-| 输入 help 返回 banner  | **PC 流错乱**（中断返回地址错）→ 见 03-debug-pitfalls/03 |
-| 输出后整机卡死         | 中断破坏调度 / trap 上下文碰阻塞外设                            |
-| LED 亮一个固定不闪     | led 任务睡死（tick 中断没来）                                   |
-| 某些指令结果错误       | 查对应 ctl/alu/exe_next（硬件译码/运算）                        |
+| Symptom                     | Priority suspect                                                              |
+| --------------------------- | ----------------------------------------------------------------------------- |
+| No output at all / no banner | Stuck early at startup: .bss/stack/mtvec/instruction fetch; or GPIO lit on reset |
+| Banner present, no input echo | uart_rx task asleep (tick interrupt not firing) / wrong input ownership      |
+| Typing help returns banner   | **PC flow corrupted** (wrong interrupt return address) → see 03-debug-pitfalls/03 |
+| Whole system hangs after output | Interrupt corrupting scheduling / trap context touching a blocking peripheral |
+| One LED lit, not blinking   | led task asleep (tick interrupt not firing)                                   |
+| Some instruction results wrong | Check the corresponding ctl/alu/exe_next (hardware decode/operation)        |
 
-## 4. 关键排查工具
+## 4. Key Troubleshooting Tools
 
-### 4.1 反汇编（map/dasm）
+### 4.1 Disassembly (map/dasm)
 
-`ninja dasm` 生成 `MiniRTOS_shturl.txt`。定位到出错 PC 后对照源码，
-判断是取错指令（PC 错）还是运算错。
+`ninja dasm` generates `MiniRTOS_shturl.txt`. After locating the faulting PC, compare against
+the source to determine whether the wrong instruction was fetched (PC error) or an arithmetic
+error occurred.
 
-### 4.2 ModelSim 仿真
+### 4.2 ModelSim Simulation
 
-`simulation/modelsim/sim.do` 一键跑。`tb/mycpu_sim.v` 会打印：
+`simulation/modelsim/sim.do` runs in one click. `tb/mycpu_sim.v` prints:
 
-- 每周期"寄存器/CSR 变化 + 所在 PC + 指令名"。
-- 支持 `+STOP_PC=0x...` 在指定地址停住（`mycpu_sim.v:357`）。
+- Each cycle's "register/CSR changes + PC + instruction name".
+- Supports `+STOP_PC=0x...` to stop at a given address (`mycpu_sim.v:357`).
 
-看波形关键信号：`if_token/ifid_token/exe_token/perips_token/wb_token`（token 推进）、
-`perips_data_w`、`wb_pc_w`、`csr_intrpt_w`、AXI 握手 `axil_*valid/ready`。
+Key signals to watch in the waveform: `if_token/ifid_token/exe_token/perips_token/wb_token`
+(token progression), `perips_data_w`, `wb_pc_w`, `csr_intrpt_w`, and the AXI handshake
+`axil_*valid/ready`.
 
-### 4.3 QEMU 对照
+### 4.3 QEMU Comparison
 
-同一份 `portmacro.h`/`timer.c` 换成 QEMU 参数，`ninja run` 在 QEMU 上跑，
-确认软件行为基准。
+Swap the same `portmacro.h`/`timer.c` to QEMU parameters, run `ninja run` on QEMU, and confirm
+the software behavior baseline.

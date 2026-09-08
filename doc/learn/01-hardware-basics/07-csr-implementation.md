@@ -1,28 +1,32 @@
-# 07. CSR 硬件实现
+---
+permalink: /learn/01-hardware-basics/07-csr-implementation/
+lang: en
+---
+# 07. CSR Hardware Implementation
 
-## 1. CSR 寄存器堆：regfile_csr.v
+## 1. CSR Register File: regfile_csr.v
 
-`src/regfile_csr.v` 是 CSR 硬件核心，实现了 9 个机器模式 CSR：
+`src/regfile_csr.v` is the core of the CSR hardware, implementing 9 machine-mode CSRs:
 
-| 索引 | CSR | 地址 | 说明 |
-|------|-----|------|------|
-| 0 | mstatus | 0x300 | 机器状态（MIE/MPIE/MPP） |
-| 1 | misa | 0x301 | 机器 ISA |
-| 2 | mie | 0x304 | 中断使能（bit7=MTIE） |
-| 3 | mtvec | 0x305 | 陷阱向量基址 |
-| 4 | mscratch | 0x340 | 临时寄存器 |
-| 5 | mepc | 0x341 | 异常/中断返回 PC |
-| 6 | mcause | 0x342 | 陷阱原因 |
-| 7 | mtval | 0x343 | 陷阱值 |
-| 8 | mip | 0x344 | 中断挂起 |
+| Index | CSR | Address | Description |
+|-------|-----|---------|-------------|
+| 0 | mstatus | 0x300 | Machine status (MIE/MPIE/MPP) |
+| 1 | misa | 0x301 | Machine ISA |
+| 2 | mie | 0x304 | Interrupt enable (bit7=MTIE) |
+| 3 | mtvec | 0x305 | Trap vector base address |
+| 4 | mscratch | 0x340 | Scratch register |
+| 5 | mepc | 0x341 | Exception/interrupt return PC |
+| 6 | mcause | 0x342 | Trap cause |
+| 7 | mtval | 0x343 | Trap value |
+| 8 | mip | 0x344 | Interrupt pending |
 
-地址宏在 `src/rvdef.vh:232-245`。读写端口：
+The address macros are in `src/rvdef.vh:232-245`. Read/write ports:
 
 ```verilog
 // src/core_ctl.v:154-170
 regfile_csr u_regfile_csr(
     .wen   (perips_token ? wb_csrwen_w : 3'b000),
-    .raddr (ifid_csraddr_w),      // 读 CSR（ID 阶段）
+    .raddr (ifid_csraddr_w),      // read CSR (ID stage)
     .waddr (perips_csraddr),
     .idata (wb_csr_w),
     .odata (ifid_csrdata_w),
@@ -35,91 +39,91 @@ regfile_csr u_regfile_csr(
 );
 ```
 
-`wen` 的 3 位编码（`src/core_wb.v:17-27` 组合逻辑产生）：
+The 3-bit encoding of `wen` (produced by combinational logic in `src/core_wb.v:17-27`):
 
 ```
-excp_token ? 010   （异常：ecall/ebreak 写 mepc/mcause/mtval/MPIE/MIE）
-is_mret    ? 011   （mret：MIE ← MPIE）
-ctl_csrw   ? 001   （CSR 指令写）
-默认       000
+excp_token ? 010   (exception: ecall/ebreak write mepc/mcause/mtval/MPIE/MIE)
+is_mret    ? 011   (mret: MIE ← MPIE)
+ctl_csrw   ? 001   (CSR instruction write)
+default      000
 ```
 
-## 2. CSR 指令译码
+## 2. CSR Instruction Decoding
 
-`src/ctl_ifid.v:103-149` 处理 `OP_CSR`：
+`src/ctl_ifid.v:103-149` handles `OP_CSR`:
 
-- `opt_alusrc2 = OPT_ALUSRC_CSR`：ALU 第二源 = CSR 读值（`src/ifid_mux_alusrc2.v`）。
-- `CSRRSI/CSRRCI/CSRRWI` 用 `opt_alusrc1 = OPT_ALUSRC1_RS1`（把 rs1 当立即数 uimm）。
-- funct3 对应 ALU 功能（`src/ctl_exe.v:93-103`）：
+- `opt_alusrc2 = OPT_ALUSRC_CSR`: ALU second source = CSR read value (`src/ifid_mux_alusrc2.v`).
+- `CSRRSI/CSRRCI/CSRRWI` use `opt_alusrc1 = OPT_ALUSRC1_RS1` (treating rs1 as the immediate uimm).
+- funct3 corresponds to the ALU function (`src/ctl_exe.v:93-103`):
 
 ```verilog
-CSRRW : ALU_SRC1   // 直接写
-CSRRS : ALU_OR     // 置位：old | rs1
-CSRRC : ALU_ANDN   // 清零：~rs1 & old（ALU_ANDN = ~data1 & data2）
+CSRRW : ALU_SRC1   // direct write
+CSRRS : ALU_OR     // set bits: old | rs1
+CSRRC : ALU_ANDN   // clear bits: ~rs1 & old (ALU_ANDN = ~data1 & data2)
 ```
 
-`src/ctl_wb.v:63-67`：CSR 指令 `reg_write=1, csr_write=1, opt_wb=OPT_WB_CSR`
-（写回原 CSR 值，见 `src/core_wb.v:40` `OPT_WB_CSR: wbreg=csrdata`）。
+`src/ctl_wb.v:63-67`: CSR instructions `reg_write=1, csr_write=1, opt_wb=OPT_WB_CSR`
+(write back the original CSR value, see `src/core_wb.v:40` `OPT_WB_CSR: wbreg=csrdata`).
 
-## 3. CSR 读写时序
+## 3. CSR Read/Write Timing
 
-- **读**：ID 阶段 `ifid_csraddr_w` 组合读出 `odata`，锁存进 `ifid_csr` → `exe_csr` → `perips_csr`。
-- **写**：WB 退休拍 `perips_token && ctl_csrw` 时，`wb_csr_w`（ALU 结果）写入目标 CSR。
+- **Read**: in the ID stage `ifid_csraddr_w` combinationally reads out `odata`, latched into `ifid_csr` → `exe_csr` → `perips_csr`.
+- **Write**: on the WB retire beat, when `perips_token && ctl_csrw`, `wb_csr_w` (ALU result) is written into the target CSR.
 
-## 4. 中断/异常对 CSR 的更新（重要）
+## 4. Interrupt/Exception CSR Updates (Important)
 
-`regfile_csr.v` 的 `always` 块里，写优先级是：
+In the `always` block of `regfile_csr.v`, the write priority is:
 
 ```
-rst > wen==001(CSR指令) > wen==010(异常) > wen==011(mret) > (perips_token && MIE) 中断捕获 > 默认
+rst > wen==001(CSR instruction) > wen==010(exception) > wen==011(mret) > (perips_token && MIE) interrupt capture > default
 ```
 
-- **异常（010）**：`mepc <= pc`（ecall 自身地址，软件 +4 跳过）、`mcause <= excp_cause`、
-  `mtval <= excp_mtval`、`MPIE <= MIE`、`MIE <= 0`。
-- **中断捕获**：条件 `perips_token && MIE && MTIE && mtip`，
-  `mepc <= nextpc`（**被中断指令的真实下一 PC**，见下）、`mcause <= 0x80000007`、
-  `MPIE <= MIE`、`MIE <= 0`、`intrpt <= 1`。
-- **mret（011）**：`MIE <= MPIE`。
+- **Exception (010)**: `mepc <= pc` (the ecall instruction's own address; software does +4 to skip), `mcause <= excp_cause`,
+  `mtval <= excp_mtval`, `MPIE <= MIE`, `MIE <= 0`.
+- **Interrupt capture**: condition `perips_token && MIE && MTIE && mtip`,
+  `mepc <= nextpc` (**the true next PC of the interrupted instruction**, see below), `mcause <= 0x80000007`,
+  `MPIE <= MIE`, `MIE <= 0`, `intrpt <= 1`.
+- **mret (011)**: `MIE <= MPIE`.
 
-> **关键设计**：中断捕获保存的是 `nextpc`（即 `perips_nextpc`，被中断指令的**真实**下一 PC），
-> 而不是 `pc+4`。对于顺序指令两者相同，但对于**分支/跳转**（beq/bne/jal/jalr），
-> 真正的下一指令在目标地址，`pc+4` 是错的。这条教训的完整排错过程见
-> `03-debug-pitfalls/03`——正是本项目最后一次硬软联调的核心 bug。
+> **Key design**: interrupt capture saves `nextpc` (i.e. `perips_nextpc`, the **true** next PC of the interrupted instruction),
+> rather than `pc+4`. For sequential instructions the two are the same, but for **branches/jumps** (beq/bne/jal/jalr),
+> the real next instruction is at the target address, and `pc+4` would be wrong. The full debugging process for this lesson is in
+> `03-debug-pitfalls/03` — it was the core bug of this project's final hardware/software co-debugging.
 
-## 5. intrpt 信号：寄存器化 vs 组合逻辑
+## 5. The intrpt Signal: Registered vs Combinational
 
-早期版本 `intrpt` 是组合逻辑 `assign intrpt = perips_token && MIE && MTIE && mtip`
-（与 CSR 写优先级无关），导致"CSR 指令退休与中断同拍"时 PC 被劫持进 trap 但
-mepc/mcause 是陈旧值（幻影 trap）。现版本把 `intrpt` 做成**寄存器输出**
-（`src/regfile_csr.v:23`），只在中断分支里 `intrpt <= 1`，其余分支清 0。
-配合 WB 的"退休拍 + 采样拍"（`src/core_ctl.v:444-451`），
-intrpt 在退休拍置位、采样拍被 `wb_mux_pc` 采样，完成重定向。
-详见 `03-debug-pitfalls/03`。
+In the early version `intrpt` was combinational: `assign intrpt = perips_token && MIE && MTIE && mtip`
+(unrelated to the CSR write priority), which caused "CSR instruction retire and interrupt in the same beat" to hijack the PC into a trap but
+leave mepc/mcause stale (a phantom trap). The current version makes `intrpt` a **registered output**
+(`src/regfile_csr.v:23`), setting `intrpt <= 1` only in the interrupt branch and clearing it to 0 in all other branches.
+Combined with the WB "retire beat + sample beat" (`src/core_ctl.v:444-451`),
+intrpt is set on the retire beat and sampled by `wb_mux_pc` on the sample beat, completing the redirect.
+See `03-debug-pitfalls/03` for details.
 
-## 6. 测试：ins/zicsr.s
+## 6. Test: ins/zicsr.s
 
-`ins/zicsr.s` 用 mscratch（0x340）完整验证 6 种 CSR 指令：
+`ins/zicsr.s` fully verifies the 6 CSR instructions using mscratch (0x340):
 
 ```asm
 csrrwi x0,0x340,0        # mscratch = 0
 li x5,0x12345678
-csrrw x6,0x340,x5        # 读旧值(0)到 x6，写入新值
+csrrw x6,0x340,x5        # read old value (0) into x6, write the new value
 bne x6,x0,fail
 csrr x7,0x340            # x7 = 0x12345678
 ...
-csrrs x6,0x340,x5        # 置位（OR）
-csrrc x6,0x340,x5        # 清零（ANDN）
-csrrwi/csr rsi/csr rci  # 立即数版本
+csrrs x6,0x340,x5        # set bits (OR)
+csrrc x6,0x340,x5        # clear bits (ANDN)
+csrrwi/csr rsi/csr rci  # immediate versions
 pass: li x31,1; ...
 fail: li x31,0; ...
 ```
 
-最终看 x31。
+Finally look at x31.
 
-## 7. 易错点
+## 7. Pitfalls
 
-- **CSR 写值来源**：写的是 `wb_csr_w`（ALU 结果），CSRRS 的"置位"必须用 `ALU_OR`，
-  CSRRC 的"清零"必须用 `ALU_ANDN`（`~data1 & data2`），且 operands 顺序不能反。
-- **写回旧值**：CSR 指令写回的是**读到的旧 CSR 值**（`OPT_WB_CSR: wbreg=csrdata`），
-  不是新值。
-- **中断保存 nextpc**：见第 4 节，这是本项目踩过的坑。
+- **Source of the CSR write value**: it writes `wb_csr_w` (the ALU result); CSRRS's "set" must use `ALU_OR`,
+  and CSRRC's "clear" must use `ALU_ANDN` (`~data1 & data2`), and the operand order must not be reversed.
+- **Writing back the old value**: a CSR instruction writes back the **old CSR value that was read** (`OPT_WB_CSR: wbreg=csrdata`),
+  not the new value.
+- **Interrupt saves nextpc**: see Section 4; this is a pitfall this project has hit.

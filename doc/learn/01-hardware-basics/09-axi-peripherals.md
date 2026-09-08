@@ -1,46 +1,50 @@
-# 09. AXI4-Lite 总线
+---
+permalink: /learn/01-hardware-basics/09-axi-peripherals/
+lang: en
+---
+# 09. AXI4-Lite Bus
 
-## 1. 为什么需要总线
+## 1. Why a Bus Is Needed
 
-CPU 要把 UART、GPIO 当作普通内存地址访问（MMIO），但这两个外设的接口是标准
-AXI4-Lite 从机（本项目外设代码来自开源 AXI-Lite IP）。CPU 侧用的是简化的
-"request/data/ready"接口，所以需要一个**主桥** `axil_master.v` 做协议转换。
+The CPU needs to access UART and GPIO as ordinary memory addresses (MMIO), but these two peripherals use the standard
+AXI4-Lite slave interface (this project's peripheral code comes from open-source AXI-Lite IP). The CPU side uses a simplified
+"request/data/ready" interface, so a **master bridge** `axil_master.v` is needed to do the protocol conversion.
 
-总线拓扑：**1 主 3 从**。`src/core_perips.v` 里：
+Bus topology: **1 master, 3 slaves**. In `src/core_perips.v`:
 
 - `is_uart = (adr[31:16] == 16'h1000)`
 - `is_gpio = (adr[31:16] == 16'h2000)`
 
-MEM（0x8000_0000）与 CLINT（0x0200_0000）**不走 AXI**，是固定延迟直连（见 03 章），
-所以 AXI 总线实际上只服务 UART 和 GPIO。
+MEM (0x8000_0000) and CLINT (0x0200_0000) **do not go through AXI**; they are fixed-latency direct connections (see Chapter 03),
+so the AXI bus actually only serves UART and GPIO.
 
-## 2. AXI4-Lite 五通道
+## 2. The Five AXI4-Lite Channels
 
-AXI4-Lite 写事务用 3 个通道，读事务用 2 个通道：
+An AXI4-Lite write transaction uses 3 channels, and a read transaction uses 2 channels:
 
-| 通道 | 方向 | 信号 | 说明 |
-|------|------|------|------|
-| AW（写地址） | M→S | awaddr/awvalid/awready | 写地址 |
-| W（写数据） | M→S | wdata/wstrb/wvalid/wready | 写数据 + 字节使能 |
-| B（写响应） | S→M | bresp/bvalid/bready | 写完成确认 |
-| AR（读地址） | M→S | araddr/arvalid/arready | 读地址 |
-| R（读数据） | S→M | rdata/rresp/rvalid/rready | 读数据 |
+| Channel | Direction | Signals | Description |
+|---------|-----------|---------|-------------|
+| AW (write address) | M→S | awaddr/awvalid/awready | write address |
+| W (write data) | M→S | wdata/wstrb/wvalid/wready | write data + byte enables |
+| B (write response) | S→M | bresp/bvalid/bready | write completion acknowledgment |
+| AR (read address) | M→S | araddr/arvalid/arready | read address |
+| R (read data) | S→M | rdata/rresp/rvalid/rready | read data |
 
-每个通道都是 **VALID/READY 握手**：主拉 VALID，从拉 READY，两者同时有效时
-数据/地址在沿上被锁存。`core_perips.v:106-122` 例化了这些互联线网。
+Each channel uses a **VALID/READY handshake**: the master asserts VALID, the slave asserts READY, and when both are active
+the data/address is latched on the edge. `core_perips.v:106-122` instantiates these interconnect nets.
 
-## 3. axil_master 状态机（src/axil_master.v）
+## 3. axil_master State Machine (src/axil_master.v)
 
-主桥把 CPU 的简单接口（`mem_req` 脉冲 + `mem_addr/mem_wdata/mem_wen/mem_wstrb`）
-转成 AXI 五通道握手。状态机：
+The master bridge converts the CPU's simple interface (`mem_req` pulse + `mem_addr/mem_wdata/mem_wen/mem_wstrb`)
+into the AXI five-channel handshake. State machine:
 
 ```
-IDLE → (mem_req) 
-  写: → WRITE_ADDR (AW/W 各自握手) → WRITE_RESP (等 BVALID) → IDLE
-  读: → READ_ADDR (AR 握手) → READ_DATA (等 RVALID) → READ_DONE → IDLE
+IDLE → (mem_req)
+   write: → WRITE_ADDR (AW/W each handshake) → WRITE_RESP (wait for BVALID) → IDLE
+   read:  → READ_ADDR (AR handshake) → READ_DATA (wait for RVALID) → READ_DONE → IDLE
 ```
 
-关键片段（`src/axil_master.v:143-190`）：
+Key fragment (`src/axil_master.v:143-190`):
 
 ```verilog
 STATE_READ_ADDR: begin
@@ -58,19 +62,19 @@ STATE_READ_DATA: begin
     end
 end
 STATE_READ_DONE: begin
-    mem_ready <= 1'b1;      // 单拍脉冲，通知 CPU 读完成
+    mem_ready <= 1'b1;      // single-beat pulse, notifies the CPU that the read is complete
     state <= STATE_IDLE;
 end
 ```
 
-写侧 AW 和 W 是**独立通道**，`STATE_WRITE_ADDR` 里分别消费（`axil_master.v:167-181`）。
+On the write side, AW and W are **independent channels**, consumed separately in `STATE_WRITE_ADDR` (`axil_master.v:167-181`).
 
-`mem_ready` 是单拍脉冲（`axil_master.v:115` 默认清 0），`mem_busy = (state != IDLE)`
-（`axil_master.v:86`）供 CPU 判断忙。
+`mem_ready` is a single-beat pulse (`axil_master.v:115` defaults to clearing to 0), and `mem_busy = (state != IDLE)`
+(`axil_master.v:86`) lets the CPU determine busy status.
 
-## 4. CPU 侧时序
+## 4. CPU-Side Timing
 
-`src/core_perips.v:127-176` 把 PERIPS 的 `req` 转成 AXI 请求：
+`src/core_perips.v:127-176` converts PERIPS's `req` into an AXI request:
 
 ```verilog
 wire axil_mem_req = req && (is_uart || is_gpio);
@@ -80,12 +84,12 @@ wire [3:0] axil_wstrb = (wen==2'b01) ? 4'b0001 :
                         (wen==2'b11) ? 4'b1111 : 4'b0000;
 ```
 
-`core_ctl` 的 PERIPS 拍里：发 `perips_req` → 等 `perips_done`（=`axil_ready`）
-→ 捕获数据、推进 token（`src/core_ctl.v:406-427`）。
+In `core_ctl`'s PERIPS beat: issue `perips_req` → wait for `perips_done` (=`axil_ready`)
+→ capture data, advance the token (`src/core_ctl.v:406-427`).
 
-## 5. 从机返回的多路选择
+## 5. Slave Return Mux
 
-`src/core_perips.v:277-290` 把两个从机的握手信号按 `is_uart/is_gpio` 选回给 Master：
+`src/core_perips.v:277-290` selects the two slaves' handshake signals back to the Master based on `is_uart/is_gpio`:
 
 ```verilog
 assign s_axil_awready = is_uart ? uart_awready : is_gpio ? gpio_awready : 1'b0;
@@ -93,17 +97,17 @@ assign s_axil_rdata   = is_uart ? uart_rdata_s : is_gpio ? gpio_rdata_s : 32'b0;
 ...
 ```
 
-`odata` 最终选择（`src/core_perips.v:295-298`）：MEM → CLINT → AXI。
+The final `odata` selection (`src/core_perips.v:295-298`): MEM → CLINT → AXI.
 
-## 6. 测试与调试
+## 6. Testing and Debugging
 
-- 最简单的验证：Shell 的 `info`/`gpio`/`uart` 命令读写 UART/GPIO 寄存器。
-- ModelSim 波形里看 `axil_*valid/ready` 握手（`tb/mycpu_sim.v:61-71` 已把 AXI 信号引出）。
-- 常见问题：`req` 脉冲太短、`mem_ready` 没被消费、AW/W 两个通道未分别握手。
+- The simplest verification: use the Shell's `info`/`gpio`/`uart` commands to read/write the UART/GPIO registers.
+- Look at the `axil_*valid/ready` handshakes in the ModelSim waveform (`tb/mycpu_sim.v:61-71` has already brought the AXI signals out).
+- Common problems: `req` pulse too short, `mem_ready` not consumed, and the AW/W two channels not each handshaking.
 
-## 7. 易错点
+## 7. Pitfalls
 
-- **mem_ready 单拍**：若 CPU 没在那一拍捕获 `perips_data_w`，数据就丢了——
-  `core_ctl` 必须在 `perips_done`（=axil_ready）那一拍锁存。
-- **wstrb**：SB 只写低字节（`wstrb=0001`），SH/SW 依次扩展，`axil_master.v` 不做字节选择。
-- **AW/W 独立性**：AXI 允许 AW 和 W 乱序，主桥在 WRITE_ADDR 状态同时等两个通道就绪。
+- **mem_ready single beat**: if the CPU does not capture `perips_data_w` on that beat, the data is lost —
+  `core_ctl` must latch on the `perips_done` (=axil_ready) beat.
+- **wstrb**: SB only writes the low byte (`wstrb=0001`), SH/SW extend accordingly; `axil_master.v` does not do byte selection.
+- **AW/W independence**: AXI allows AW and W to be out of order; the master bridge waits for both channels to be ready in the WRITE_ADDR state.

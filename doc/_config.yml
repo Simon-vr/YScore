@@ -1,0 +1,33 @@
+# YScore documentation site — GitHub Pages (Jekyll)
+#
+# This folder (doc/) is served by GitHub Pages from the /docs folder of the repo.
+#
+# IMPORTANT: if this is a *project* page (i.e. your site lives at
+# https://<user>.github.io/<repo>/), set baseurl to "/<repo>" so all links
+# resolve correctly. Leave it empty ("") for user/org pages or when the doc
+# folder is the root of its own Pages repo.
+
+title: "YScore"
+tagline: "A RISC-V SoC written from scratch in Verilog"
+description: "From 0, write an RV32I SoC that can run C: a 5-stage multi-cycle RISC-V core + AXI4-Lite + bare-metal RTOS."
+baseurl: ""
+url: "/YScore"
+
+markdown: kramdown
+highlighter: rouge
+kramdown:
+  input: GFM
+  syntax_highlighter: rouge
+
+# Apply the default layout to every markdown page.
+defaults:
+  - scope:
+      path: ""
+    values:
+      layout: default
+
+exclude:
+  - README_zh.md
+  - "*.drawio"
+  - Gemfile
+  - Gemfile.lock

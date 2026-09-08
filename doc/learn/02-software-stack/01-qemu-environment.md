@@ -1,14 +1,22 @@
-# 01. QEMU 开发环境
+---
+permalink: /learn/02-software-stack/01-qemu-environment/
+lang: en
+---
+# 01. QEMU Development Environment
 
-## 1. 为什么用 QEMU
+## 1. Why QEMU
 
-自家 FPGA CPU 每次上板都要重新综合烧录（分钟级），而且硬件有 bug 时很难区分
-"CPU 设计错了"还是"软件写错了"。QEMU 提供**标准的 RISC-V 模拟**（严格实现规范），
-先用它在模拟器上把软件逻辑调对，再移植上板——这样上板出问题时就聚焦在硬件。
+Our own FPGA CPU requires a full synthesis and re-flash each time it is brought up
+(minutes per iteration), and when there is a hardware bug it is hard to tell whether
+the "CPU design is wrong" or "the software is wrong". QEMU provides **standard RISC-V
+simulation** (strictly implementing the spec), so we first get the software logic
+correct on the simulator and then port it onto the board — that way, when problems
+arise on the board, we can focus on the hardware.
 
-## 2. 运行方式
+## 2. How to Run
 
-`rtos/CMakeLists.txt` 里定义了 `run`/`debug`/`gdb` 目标（QEMU 版）或 `mem` 目标（FPGA 版）：
+`rtos/CMakeLists.txt` defines the `run`/`debug`/`gdb` targets (QEMU version) and the
+`mem` target (FPGA version):
 
 ```cmake
 add_custom_target(run
@@ -17,42 +25,44 @@ add_custom_target(run
     DEPENDS MiniRTOS.elf)
 ```
 
-命令拆解（QEMU 8.2.2）：
-- `-nographic`：把 UART 接到当前终端（无图形窗口）。
-- `-machine virt`：QEMU 的通用 virt 平台。
-- `-cpu rv32`：RV32 内核。
-- `-bios none`：不用 OpenSBI/固件，直接从 0x80000000 跑 `_start`（全程 M 模式）。
-- `-kernel MiniRTOS.elf`：加载内核 ELF。
+Command breakdown (QEMU 8.2.2):
+- `-nographic`: connects the UART to the current terminal (no graphical window).
+- `-machine virt`: QEMU's generic virt platform.
+- `-cpu rv32`: RV32 core.
+- `-bios none`: does not use OpenSBI/firmware; runs `_start` directly from 0x80000000 (all in M mode).
+- `-kernel MiniRTOS.elf`: loads the kernel ELF.
 
-## 3. QEMU virt 的地址空间（与 FPGA 的对照）
+## 3. QEMU virt Address Space (vs FPGA)
 
-| 地址 | QEMU virt | FPGA yscore |
-|------|-----------|-------------|
-| 0x80000000 | 内核加载点（RAM） | 数据存储器 0x80000000 |
+| Address | QEMU virt | FPGA yscore |
+|---------|-----------|-------------|
+| 0x80000000 | Kernel load point (RAM) | Data memory 0x80000000 |
 | 0x10000000 | NS16550 UART | axil_uart |
-| 0x02000000 | CLINT（10MHz） | CLINT（50MHz） |
-| GPIO | 无 | 0x20000000 |
+| 0x02000000 | CLINT (10MHz) | CLINT (50MHz) |
+| GPIO | none | 0x20000000 |
 
-对照参考笔记：`rtos/refer/qemu_virt内存空间.md`。
+## 4. How the port Layer Isolates Differences
 
-## 4. port 层如何隔离差异
+The differences between QEMU and FPGA all converge in `rtos/port/`:
 
-QEMU 与 FPGA 的差异全部收敛在 `rtos/port/`：
+- **UART register layout**: QEMU uses NS16550 (RBR/THR share address 0x0, LSR at 0x5),
+  while the FPGA uses axil_uart (THR@0x0, RBR@0x4, STAT@0x8) — the difference is in the
+  register definitions in `portmacro.h`.
+- **CLINT frequency**: QEMU mtime is 10MHz (1ms = 10000 counts), FPGA is 50MHz
+  (1ms = 50000) — the difference is in `ulTimerIncrementsForOneTick` in `port/timer.c`.
+- **Context frame**: the SAVE/RESTORE_CONTEXT macros in `portmacro.h` match `portASM.S`
+  exactly (144-byte frame, mstatus@124, mepc@128), common to both QEMU and FPGA.
+- **GPIO**: QEMU has no GPIO, so `lib/gpio.c` degrades to software simulation on QEMU
+  (see the comments in `include/gpio.h`).
 
-- **UART 寄存器布局**：QEMU 是 NS16550（RBR/THR 同址 0x0、LSR 在 0x5），
-  FPGA 是 axil_uart（THR@0x0、RBR@0x4、STAT@0x8）——差别在 `portmacro.h` 的寄存器定义。
-- **CLINT 频率**：QEMU mtime 10MHz（1ms=10000 计数），FPGA 50MHz（1ms=50000）——
-  差别在 `port/timer.c` 的 `ulTimerIncrementsForOneTick`。
-- **上下文帧**：`portmacro.h` 的 SAVE/RESTORE_CONTEXT 宏与 `portASM.S` 完全一致
-  （144 字节帧，mstatus@124、mepc@128），QEMU 与 FPGA 通用。
-- **GPIO**：QEMU 无 GPIO，`lib/gpio.c` 在 QEMU 退化为软件模拟（见 `include/gpio.h` 注释）。
+Everything else (`sys/kernel.c`, `src/*.c`, `lib/*.c`) is reused verbatim.
 
-其余（`sys/kernel.c`、`src/*.c`、`lib/*.c`）逐字复用。
+## 5. Debugging Tips
 
-## 5. 调试技巧
-
-- **反汇编**：`riscv-none-elf-objdump -D -h -z MiniRTOS.elf` 或 `ninja dasm`。
-- **GDB**：`ninja debug`（QEMU 挂 `-gdb tcp::1234 -S`）后 `ninja gdb` 连接，
-  可打断点、单步、看寄存器（这是定位"跑飞/卡死"最有力的手段）。
-- **对比运行**：同一份代码，QEMU 上行为正确 + FPGA 上行为异常 → 问题在硬件；
-  两者都异常 → 问题在软件。这个二分法是本项目联调的主线（见 03-debug-pitfalls）。
+- **Disassembly**: `riscv-none-elf-objdump -D -h -z MiniRTOS.elf` or `ninja dasm`.
+- **GDB**: `ninja debug` (QEMU starts with `-gdb tcp::1234 -S`) then `ninja gdb` to connect;
+  you can set breakpoints, single-step, and inspect registers (this is the most powerful
+  tool for locating "runaway/hang" bugs).
+- **Compare runs**: with the same code, if QEMU behaves correctly but the FPGA does not,
+  the problem is in the hardware; if both misbehave, the problem is in the software.
+  This dichotomy is the main thread of joint debugging in this project (see 03-debug-pitfalls).

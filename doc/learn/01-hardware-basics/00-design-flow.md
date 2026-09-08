@@ -1,24 +1,26 @@
-# 00. 硬件设计流程：先波形、再架构、后写码
+---
+permalink: /learn/01-hardware-basics/00-design-flow/
+lang: en
+---
+# 00. Hardware Design Flow: Waveform, Then Architecture, Then Code
 
-> 这是本项目**写每一段硬件之前的标准流程**。顺序是：
-> **① 用 drawio 画好关键信号的设想波形 → ② 画好架构图（明确线网）→ ③ 才写 Verilog**。
+> This is the **standard flow before writing every piece of hardware** in this project. The order is:
+> **① draw the intended waveform of the key signals in drawio → ② draw the architecture diagram (make the nets explicit) → ③ then write Verilog**.
 >
-> 目的：写代码前先想清楚"每一拍每个信号是什么值"，写完后直接对照波形检查，
-> 避免"漏打一拍"和"线网混乱"这两类最隐蔽、最难查的硬件 bug。
+> Purpose: think through "what value each signal has each cycle" before writing code, then check directly against the waveform after writing,
+> to avoid "missing a cycle" and "messy nets", the two most hidden and hardest-to-find kinds of hardware bug.
 
 ---
 
+Two typical sources of hardware bugs:
 
+1. **Missing a cycle**: in a multi-cycle pipeline, a signal is latched a cycle too early or too late. Off by one edge on the waveform
+   and the whole function is wrong, yet it is hard to spot just by reading code (the counterintuitive "value takes effect after the edge" of sequential logic).
+2. **Messy nets**: module interface names, widths, and connection relationships are a muddle in your head, causing misconnections at instantiation.
 
-硬件 bug 的两种典型来源：
+**Drawing forces you to think the timing and interfaces through first**:
 
-1. **漏打一拍**：多周期流水线里，信号早/晚一拍锁存。波形上差一个沿，
-   功能就全错，且单看代码很难发现（时序逻辑的"值在沿后生效"反直觉）。
-2. **线网混乱**：模块接口名、位宽、连接关系在脑子里一团浆糊，例化时接错。
+- Drawing the waveform = fixing the advance of each stage's token and "when each signal is valid / when it is latched".
+- Drawing the architecture = listing each module's input/output nets, widths, and sources/destinations clearly.
 
-**画图强制你先把时序和接口想清楚**：
-
-- 画波形 = 把每个阶段 token 的推进、每个信号的"何时有效/何时锁存"定下来。
-- 画架构 = 把每个模块的输入/输出线网、位宽、来源去向列清楚。
-
-写代码只是把图"翻译"成 Verilog，出错概率大幅下降。
+Writing code is just "translating" the diagrams into Verilog, which greatly reduces the chance of error.

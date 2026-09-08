@@ -1,3 +1,9 @@
+---
+title: YScore 首页
+lang: zh
+permalink: /zh/
+---
+
 # YScore — 从 0 写一个能跑 C 语言的 RV32I SoC
 
 > **Yes! core / Your Simple Core** —— 手写 Verilog 的 5 级多周期 RISC-V 处理器 + AXI4-Lite 总线适配 + 裸机 RTOS。
@@ -6,9 +12,11 @@
 
 ## 效果展示
 
-![展示视频](image/README_zh/show.mp4)
+<video controls muted preload="metadata" style="max-width:100%">
+  <source src="{{ site.baseurl }}/image/show.mp4" type="video/mp4">
+</video>
 
-![硬件架构](image/README_zh/arch.svg)
+![硬件架构]({{ site.baseurl }}/image/arch.svg)
 
 ---
 
@@ -130,7 +138,6 @@ yscore/
 │   ├── bin2mem.py       # ELF → imem.mem / dmem0~3.mem
 │   └── CMakeLists.txt
 ├── ins/                 # 指令测试（RI/LS/branch/others/zicsr/except/test.c）
-├── refer/               # 学习笔记（CSR/中断/mstatus/链接脚本等）
 └── doc/learn/           # 完整学习文档（见下）
 ```
 
@@ -184,7 +191,7 @@ python bin2mem.py        # 生成 imem.mem
 
 ## 完整学习文档
 
-👉 **[doc/learn/](doc/learn/)**
+👉 **[文档导航]({{ site.baseurl }}/zh/learn/)**
 
 按章节推进：
 
@@ -202,7 +209,3 @@ python bin2mem.py        # 生成 imem.mem
 - [SparrowRV](https://github.com/xiaowuzxc/SparrowRV)：启发了本项目的开始。
 - **一生一芯**：B 站系统网课，体系结构与流水线设计参考。
 - [Z-Core](https://github.com/paudiaz99/Z-Core)：AXI4-Lite GPIO / UART 外设实现参考。
-
----
-
-*English version: [README_en.md](README_en.md)*
