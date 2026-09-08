@@ -1,6 +1,6 @@
 # YScore — 从 0 写一个能跑 C 语言的 RV32I SoC
 
-> 🌐 **Language / 语言：** [**English**](README_en.md) · [**简体中文**](README_zh.md)
+> 🌐 **Language / 语言：** [**English**](README.md) · [**简体中文**](README_zh.md)
 
 > **Yes! core / Your Simple Core** —— 手写 Verilog 的 5 级多周期 RISC-V 处理器 + AXI4-Lite 总线适配 + 裸机 RTOS。
 
@@ -86,7 +86,8 @@
 
 ### UART 寄存器（AXI-Lite，基址 0x10000000）
 
-参考Z-core
+UART / GPIO 的 AXI-Lite 从机实现移植自
+[Z-Core-FPGA](https://github.com/paudiaz99/Z-Core-FPGA)（见 [License](#license)）。
 
 | 偏移 | 名称     | 方向 | 说明                                                         |
 | ---- | -------- | ---- | ------------------------------------------------------------ |
@@ -203,6 +204,13 @@ python bin2mem.py        # 生成 imem.mem
 
 - [SparrowRV](https://github.com/xiaowuzxc/SparrowRV)：启发了本项目的开始。
 - **一生一芯**：B 站系统网课，体系结构与流水线设计参考。
-- [Z-Core](https://github.com/paudiaz99/Z-Core)：AXI4-Lite GPIO / UART 外设实现参考。
+- [Z-Core-FPGA](https://github.com/paudiaz99/Z-Core-FPGA)：**UART 与 GPIO 的 AXI4-Lite 从机**外设移植自该项目。
 
-> 🌐 **Language / 语言：** [**English**](README_en.md) · [**简体中文**](README_zh.md)
+---
+
+## License / 许可协议
+
+本项目采用 [MIT License](LICENSE)。移植自
+[Z-Core-FPGA](https://github.com/paudiaz99/Z-Core-FPGA) 的 UART / GPIO AXI-Lite 从机外设保留其原始版权声明。
+
+> 🌐 **Language / 语言：** [**English**](README.md) · [**简体中文**](README_zh.md)
