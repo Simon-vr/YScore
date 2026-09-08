@@ -1,3 +1,0 @@
-Info (10281): Verilog HDL Declaration information at axil_uart.v(98): object "tx_start" differs only in case from object "TX_START" in the same scope File: D:/yscore/src/axil_uart.v Line: 98
-Info (10281): Verilog HDL Declaration information at axil_uart.v(97): object "tx_data" differs only in case from object "TX_DATA" in the same scope File: D:/yscore/src/axil_uart.v Line: 97
-Info (10281): Verilog HDL Declaration information at axil_uart.v(103): object "rx_data" differs only in case from object "RX_DATA" in the same scope File: D:/yscore/src/axil_uart.v Line: 103
