@@ -1,4 +1,4 @@
-> 🌐 **Language / 语言：** [**简体中文**](README_zh.md) · [**English**](README.md)
+> 🌐 **Language / 语言：** [**简体中文**](README.md) · [**English**](README_en.md)
 
 ---
 
@@ -89,8 +89,7 @@ completes the PC redirection.
 
 ### UART registers (AXI-Lite, base 0x10000000)
 
-The UART / GPIO AXI-Lite slave implementation is ported from
-[Z-Core-FPGA](https://github.com/paudiaz99/Z-Core-FPGA) (see [License](#license)).
+Referenced from Z-core
 
 | Offset | Name     | Dir  | Description                                          |
 | ------ | -------- | ---- | ---------------------------------------------------- |
@@ -207,14 +206,8 @@ Progress chapter by chapter:
 
 - [SparrowRV](https://github.com/xiaowuzxc/SparrowRV): inspired the start of this project.
 - **一生一芯** (One Student One Chip): Bilibili lecture series, reference for architecture and pipeline design.
-- [Z-Core-FPGA](https://github.com/paudiaz99/Z-Core-FPGA): the **UART and GPIO AXI4-Lite slave** peripherals are ported from this project.
+- [Z-Core](https://github.com/paudiaz99/Z-Core): reference for the AXI4-Lite GPIO / UART peripherals.
 
 ---
 
-## License
-
-This project is licensed under the [MIT License](LICENSE). The UART / GPIO AXI-Lite slave
-peripherals ported from [Z-Core-FPGA](https://github.com/paudiaz99/Z-Core-FPGA) retain their
-original copyright notice.
-
-> 🌐 **Language / 语言：** [**简体中文**](README_zh.md) · [**English**](README.md)
+> 🌐 **Language / 语言：** [**简体中文**](README.md) · [**English**](README_en.md)
