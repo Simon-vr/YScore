@@ -10,8 +10,8 @@
 title: "YScore"
 tagline: "A RISC-V SoC written from scratch in Verilog"
 description: "From 0, write an RV32I SoC that can run C: a 5-stage multi-cycle RISC-V core + AXI4-Lite + bare-metal RTOS."
-baseurl: ""
-url: "/YScore"
+baseurl: "/YScore"
+url: "https://Simon-vr.github.io"
 
 markdown: kramdown
 highlighter: rouge
