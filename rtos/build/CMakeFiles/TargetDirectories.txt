@@ -1,0 +1,8 @@
+D:/yscore/rtos/build/CMakeFiles/MiniRTOS.elf.dir
+D:/yscore/rtos/build/CMakeFiles/dasm.dir
+D:/yscore/rtos/build/CMakeFiles/bin_text.dir
+D:/yscore/rtos/build/CMakeFiles/bin_data.dir
+D:/yscore/rtos/build/CMakeFiles/bin.dir
+D:/yscore/rtos/build/CMakeFiles/mem.dir
+D:/yscore/rtos/build/CMakeFiles/edit_cache.dir
+D:/yscore/rtos/build/CMakeFiles/rebuild_cache.dir

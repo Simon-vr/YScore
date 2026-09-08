@@ -1,0 +1,514 @@
+
+There are no discarded input sections
+
+Memory Configuration
+
+Name             Origin             Length             Attributes
+irom             0x00000000         0x00004800         x
+dram             0x80000000         0x00006000         rw
+*default*        0x00000000         0xffffffff
+
+Linker script and memory map
+
+LOAD CMakeFiles/MiniRTOS.elf.dir/lib/gpio.c.obj
+LOAD CMakeFiles/MiniRTOS.elf.dir/lib/math.c.obj
+LOAD CMakeFiles/MiniRTOS.elf.dir/lib/uart.c.obj
+LOAD CMakeFiles/MiniRTOS.elf.dir/lib/utils.c.obj
+LOAD CMakeFiles/MiniRTOS.elf.dir/port/critical.c.obj
+LOAD CMakeFiles/MiniRTOS.elf.dir/port/interrupt.c.obj
+LOAD CMakeFiles/MiniRTOS.elf.dir/port/timer.c.obj
+LOAD CMakeFiles/MiniRTOS.elf.dir/src/app.c.obj
+LOAD CMakeFiles/MiniRTOS.elf.dir/src/game.c.obj
+LOAD CMakeFiles/MiniRTOS.elf.dir/src/input.c.obj
+LOAD CMakeFiles/MiniRTOS.elf.dir/src/main.c.obj
+LOAD CMakeFiles/MiniRTOS.elf.dir/src/shell.c.obj
+LOAD CMakeFiles/MiniRTOS.elf.dir/sys/kernel.c.obj
+LOAD CMakeFiles/MiniRTOS.elf.dir/sys/mem.c.obj
+LOAD CMakeFiles/MiniRTOS.elf.dir/port/portASM.S.obj
+LOAD CMakeFiles/MiniRTOS.elf.dir/port/port_timer.S.obj
+LOAD CMakeFiles/MiniRTOS.elf.dir/startup/startup.S.obj
+                0x00000400                        _sys_heap_size = 0x400
+                0x00002000                        _sys_stack_size = 0x2000
+                0x80003000                        __global_pointer$ = (ORIGIN (dram) + (LENGTH (dram) / 0x2))
+                0x00000000                        . = ORIGIN (irom)
+
+.text           0x00000000     0x4354
+ *(.text.start)
+ .text.start    0x00000000       0x4c CMakeFiles/MiniRTOS.elf.dir/startup/startup.S.obj
+                0x00000000                _start
+ *(.text*)
+ .text          0x0000004c       0xdc CMakeFiles/MiniRTOS.elf.dir/lib/gpio.c.obj
+                0x0000004c                gpio_init
+                0x000000a4                gpio_toggle
+                0x000000f8                gpio_get_output
+ .text          0x00000128      0x3fc CMakeFiles/MiniRTOS.elf.dir/lib/math.c.obj
+                0x00000278                umul
+                0x000002b4                imul
+                0x00000350                udiv
+                0x00000394                umod
+                0x000003d8                idiv
+                0x0000047c                imod
+ .text          0x00000524      0x498 CMakeFiles/MiniRTOS.elf.dir/lib/uart.c.obj
+                0x00000550                uart_init
+                0x00000574                uart_poll
+                0x00000634                uart_available
+                0x0000067c                uart_getchar
+                0x00000708                uart_write_char
+                0x000007b0                uart_write_string
+                0x0000080c                uart_write_dec
+                0x000008c4                uart_write_hex
+                0x00000948                uart_write_hex8
+ .text          0x000009bc      0x238 CMakeFiles/MiniRTOS.elf.dir/lib/utils.c.obj
+                0x000009bc                utils_skip_spaces
+                0x00000a18                utils_streq
+                0x00000ab8                utils_parse_hex
+ .text          0x00000bf4      0x170 CMakeFiles/MiniRTOS.elf.dir/port/critical.c.obj
+                0x00000c44                vPortEnterCritical
+                0x00000c98                vPortExitCritical
+                0x00000d00                vPortEnterCriticalFromISR
+                0x00000d34                vPortExitCriticalFromISR
+ .text          0x00000d64      0x22c CMakeFiles/MiniRTOS.elf.dir/port/interrupt.c.obj
+                0x00000d64                vHandle_interrupt
+                0x00000e40                vHandle_exception
+ .text          0x00000f90      0x180 CMakeFiles/MiniRTOS.elf.dir/port/timer.c.obj
+                0x00000f90                vPortSetupTimerInterrupt
+ .text          0x00001110      0x1ac CMakeFiles/MiniRTOS.elf.dir/src/app.c.obj
+                0x00001180                app_run
+ .text          0x000012bc      0xc4c CMakeFiles/MiniRTOS.elf.dir/src/game.c.obj
+                0x00001708                game_init
+                0x00001e84                game_task
+ .text          0x00001f08      0x118 CMakeFiles/MiniRTOS.elf.dir/src/input.c.obj
+                0x00001f08                input_init
+                0x00001f60                input_set_owner
+                0x00001f98                input_get_owner
+                0x00001fc8                input_dispatch
+ .text          0x00002020       0x2c CMakeFiles/MiniRTOS.elf.dir/src/main.c.obj
+                0x00002020                main
+ .text          0x0000204c      0xf34 CMakeFiles/MiniRTOS.elf.dir/src/shell.c.obj
+                0x000020e8                shell_init
+                0x00002f18                shell_task
+ .text          0x00002f80      0xeb0 CMakeFiles/MiniRTOS.elf.dir/sys/kernel.c.obj
+                0x000030a0                kernel_init
+                0x000031d8                task_create
+                0x000033c8                scheduler_switch
+                0x000034e8                kernel_tick
+                0x00003628                task_yield
+                0x00003650                task_delay
+                0x000036ec                task_block
+                0x00003758                task_wakeup
+                0x00003820                task_mark_suspended
+                0x000038c4                task_start
+                0x00003964                task_count
+                0x00003994                task_id_by_name
+                0x00003a88                task_stack_usage
+                0x00003b78                task_name
+                0x00003c18                task_stack_size
+                0x00003c8c                task_state_str
+                0x00003d50                task_wait_str
+ .text          0x00003e30       0xf8 CMakeFiles/MiniRTOS.elf.dir/sys/mem.c.obj
+                0x00003e30                vPortMemCpy
+                0x00003eb4                vPortMemSet
+ .text          0x00003f28        0x0 CMakeFiles/MiniRTOS.elf.dir/port/portASM.S.obj
+ *fill*         0x00003f28       0xd8 
+ .text.trap_handler
+                0x00004000      0x2fc CMakeFiles/MiniRTOS.elf.dir/port/portASM.S.obj
+                0x00004000                vPortStartFirstTask
+                0x000040a0                trap_handler
+ .text          0x000042fc        0x0 CMakeFiles/MiniRTOS.elf.dir/port/port_timer.S.obj
+ .text.port_timer
+                0x000042fc       0x58 CMakeFiles/MiniRTOS.elf.dir/port/port_timer.S.obj
+                0x000042fc                vportENABLE_INTERRUPT
+                0x00004308                vportUPDATE_MTIMER_COMPARE_REGISTER
+ .text          0x00004354        0x0 CMakeFiles/MiniRTOS.elf.dir/startup/startup.S.obj
+
+.rela.dyn       0x00004354        0x0
+ .rela.text.start
+                0x00004354        0x0 CMakeFiles/MiniRTOS.elf.dir/lib/gpio.c.obj
+
+.data           0x80000000      0xd34
+                0x80000000                        . = ALIGN (0x4)
+                0x80000000                        _sys_data_start = .
+ *(.srodata*)
+ .srodata       0x80000000        0x4 CMakeFiles/MiniRTOS.elf.dir/port/timer.c.obj
+                0x80000000                ulTimerIncrementsForOneTick
+ *(.rodata*)
+ .rodata        0x80000004       0x29 CMakeFiles/MiniRTOS.elf.dir/lib/uart.c.obj
+ *fill*         0x8000002d        0x3 
+ .rodata        0x80000030      0x11c CMakeFiles/MiniRTOS.elf.dir/port/interrupt.c.obj
+ .rodata        0x8000014c       0x21 CMakeFiles/MiniRTOS.elf.dir/src/app.c.obj
+ *fill*         0x8000016d        0x3 
+ .rodata        0x80000170       0x5b CMakeFiles/MiniRTOS.elf.dir/src/game.c.obj
+ *fill*         0x800001cb        0x1 
+ .rodata        0x800001cc      0xb1e CMakeFiles/MiniRTOS.elf.dir/src/shell.c.obj
+ *fill*         0x80000cea        0x2 
+ .rodata        0x80000cec       0x38 CMakeFiles/MiniRTOS.elf.dir/sys/kernel.c.obj
+ *(.data*)
+ .data          0x80000d24        0x0 CMakeFiles/MiniRTOS.elf.dir/lib/gpio.c.obj
+ .data          0x80000d24        0x0 CMakeFiles/MiniRTOS.elf.dir/lib/math.c.obj
+ .data          0x80000d24        0x0 CMakeFiles/MiniRTOS.elf.dir/lib/uart.c.obj
+ .data          0x80000d24        0x0 CMakeFiles/MiniRTOS.elf.dir/lib/utils.c.obj
+ .data          0x80000d24        0x0 CMakeFiles/MiniRTOS.elf.dir/port/critical.c.obj
+ .data          0x80000d24        0x0 CMakeFiles/MiniRTOS.elf.dir/port/interrupt.c.obj
+ .data          0x80000d24        0x0 CMakeFiles/MiniRTOS.elf.dir/port/timer.c.obj
+ .data          0x80000d24        0x0 CMakeFiles/MiniRTOS.elf.dir/src/app.c.obj
+ .data          0x80000d24        0x0 CMakeFiles/MiniRTOS.elf.dir/src/game.c.obj
+ .data          0x80000d24        0x0 CMakeFiles/MiniRTOS.elf.dir/src/input.c.obj
+ .data          0x80000d24        0x0 CMakeFiles/MiniRTOS.elf.dir/src/main.c.obj
+ .data          0x80000d24        0x0 CMakeFiles/MiniRTOS.elf.dir/src/shell.c.obj
+ .data          0x80000d24        0x0 CMakeFiles/MiniRTOS.elf.dir/sys/kernel.c.obj
+ .data          0x80000d24        0x0 CMakeFiles/MiniRTOS.elf.dir/sys/mem.c.obj
+ .data          0x80000d24        0x0 CMakeFiles/MiniRTOS.elf.dir/port/portASM.S.obj
+ .data          0x80000d24        0x0 CMakeFiles/MiniRTOS.elf.dir/port/port_timer.S.obj
+ .data          0x80000d24        0x0 CMakeFiles/MiniRTOS.elf.dir/startup/startup.S.obj
+ *(.sdata*)
+ .sdata         0x80000d24        0x4 CMakeFiles/MiniRTOS.elf.dir/port/timer.c.obj
+                0x80000d24                pullNextTime
+ .sdata         0x80000d28        0x4 CMakeFiles/MiniRTOS.elf.dir/src/game.c.obj
+                0x80000d28                shell_task_id
+ .sdata         0x80000d2c        0x4 CMakeFiles/MiniRTOS.elf.dir/src/shell.c.obj
+                0x80000d2c                game_task_id
+ .sdata         0x80000d30        0x4 CMakeFiles/MiniRTOS.elf.dir/sys/kernel.c.obj
+                0x80000d34                        _sys_data_end = .
+
+.bss            0x80000d38     0x2e7c
+                0x80000d38                        . = ALIGN (0x4)
+                0x80000d38                        _sys_bss_start = .
+ *(.bss*)
+ .bss           0x80000d38        0x4 CMakeFiles/MiniRTOS.elf.dir/lib/gpio.c.obj
+ .bss           0x80000d3c        0x0 CMakeFiles/MiniRTOS.elf.dir/lib/math.c.obj
+ .bss           0x80000d3c       0x88 CMakeFiles/MiniRTOS.elf.dir/lib/uart.c.obj
+ .bss           0x80000dc4        0x0 CMakeFiles/MiniRTOS.elf.dir/lib/utils.c.obj
+ .bss           0x80000dc4        0x4 CMakeFiles/MiniRTOS.elf.dir/port/critical.c.obj
+ .bss           0x80000dc8        0x0 CMakeFiles/MiniRTOS.elf.dir/port/interrupt.c.obj
+ .bss           0x80000dc8        0x0 CMakeFiles/MiniRTOS.elf.dir/port/timer.c.obj
+ .bss           0x80000dc8     0x2c00 CMakeFiles/MiniRTOS.elf.dir/src/app.c.obj
+ .bss           0x800039c8       0x5c CMakeFiles/MiniRTOS.elf.dir/src/game.c.obj
+ .bss           0x80003a24        0xc CMakeFiles/MiniRTOS.elf.dir/src/input.c.obj
+ .bss           0x80003a30        0x0 CMakeFiles/MiniRTOS.elf.dir/src/main.c.obj
+ .bss           0x80003a30       0x48 CMakeFiles/MiniRTOS.elf.dir/src/shell.c.obj
+ .bss           0x80003a78      0x124 CMakeFiles/MiniRTOS.elf.dir/sys/kernel.c.obj
+ .bss           0x80003b9c        0x0 CMakeFiles/MiniRTOS.elf.dir/sys/mem.c.obj
+ .bss           0x80003b9c        0x0 CMakeFiles/MiniRTOS.elf.dir/port/portASM.S.obj
+ .bss           0x80003b9c        0x0 CMakeFiles/MiniRTOS.elf.dir/port/port_timer.S.obj
+ .bss           0x80003b9c        0x0 CMakeFiles/MiniRTOS.elf.dir/startup/startup.S.obj
+ *(.sbss*)
+ *fill*         0x80003b9c        0x4 
+ .sbss          0x80003ba0        0x8 CMakeFiles/MiniRTOS.elf.dir/port/timer.c.obj
+                0x80003ba0                ullNextTime
+ .sbss          0x80003ba8        0xc CMakeFiles/MiniRTOS.elf.dir/sys/kernel.c.obj
+                0x80003ba8                pxCurrentTCB
+                0x80003bac                kernel_tick_count
+                0x80003bb0                context_switch_count
+ *(COMMON)
+                0x80003bb4                        _sys_bss_end = .
+
+.stack          0x80003bb4     0x2004
+                0x80003bb8                        . = ALIGN (0x8)
+ *fill*         0x80003bb4        0x4 
+                0x80003bb8                        _sys_stack_end = .
+                0x80005bb8                        . = (. + _sys_stack_size)
+ *fill*         0x80003bb8     0x2000 
+                0x80006000                        _sys_stack_top = (ORIGIN (dram) + LENGTH (dram))
+                0x80006000                        PROVIDE (_stack_top = _sys_stack_top)
+                0x80000d38                        PROVIDE (_bss_start = _sys_bss_start)
+                0x80003bb4                        PROVIDE (_bss_end = _sys_bss_end)
+                [!provide]                        PROVIDE (_data_start = _sys_data_start)
+                [!provide]                        PROVIDE (_data_end = _sys_data_end)
+OUTPUT(MiniRTOS.elf elf32-littleriscv)
+
+.debug_info     0x00000000     0x20b7
+ .debug_info    0x00000000       0xa1 CMakeFiles/MiniRTOS.elf.dir/lib/gpio.c.obj
+ .debug_info    0x000000a1      0x2b4 CMakeFiles/MiniRTOS.elf.dir/lib/math.c.obj
+ .debug_info    0x00000355      0x2df CMakeFiles/MiniRTOS.elf.dir/lib/uart.c.obj
+ .debug_info    0x00000634      0x10d CMakeFiles/MiniRTOS.elf.dir/lib/utils.c.obj
+ .debug_info    0x00000741       0xf4 CMakeFiles/MiniRTOS.elf.dir/port/critical.c.obj
+ .debug_info    0x00000835      0x14c CMakeFiles/MiniRTOS.elf.dir/port/interrupt.c.obj
+ .debug_info    0x00000981       0xd6 CMakeFiles/MiniRTOS.elf.dir/port/timer.c.obj
+ .debug_info    0x00000a57      0x24b CMakeFiles/MiniRTOS.elf.dir/src/app.c.obj
+ .debug_info    0x00000ca2      0x467 CMakeFiles/MiniRTOS.elf.dir/src/game.c.obj
+ .debug_info    0x00001109      0x149 CMakeFiles/MiniRTOS.elf.dir/src/input.c.obj
+ .debug_info    0x00001252       0x6d CMakeFiles/MiniRTOS.elf.dir/src/main.c.obj
+ .debug_info    0x000012bf      0x682 CMakeFiles/MiniRTOS.elf.dir/src/shell.c.obj
+ .debug_info    0x00001941      0x5e6 CMakeFiles/MiniRTOS.elf.dir/sys/kernel.c.obj
+ .debug_info    0x00001f27      0x123 CMakeFiles/MiniRTOS.elf.dir/sys/mem.c.obj
+ .debug_info    0x0000204a       0x25 CMakeFiles/MiniRTOS.elf.dir/port/portASM.S.obj
+ .debug_info    0x0000206f       0x24 CMakeFiles/MiniRTOS.elf.dir/port/port_timer.S.obj
+ .debug_info    0x00002093       0x24 CMakeFiles/MiniRTOS.elf.dir/startup/startup.S.obj
+
+.debug_abbrev   0x00000000     0x1021
+ .debug_abbrev  0x00000000       0x82 CMakeFiles/MiniRTOS.elf.dir/lib/gpio.c.obj
+ .debug_abbrev  0x00000082       0xd5 CMakeFiles/MiniRTOS.elf.dir/lib/math.c.obj
+ .debug_abbrev  0x00000157      0x164 CMakeFiles/MiniRTOS.elf.dir/lib/uart.c.obj
+ .debug_abbrev  0x000002bb       0xcd CMakeFiles/MiniRTOS.elf.dir/lib/utils.c.obj
+ .debug_abbrev  0x00000388       0xc3 CMakeFiles/MiniRTOS.elf.dir/port/critical.c.obj
+ .debug_abbrev  0x0000044b       0xe7 CMakeFiles/MiniRTOS.elf.dir/port/interrupt.c.obj
+ .debug_abbrev  0x00000532       0x98 CMakeFiles/MiniRTOS.elf.dir/port/timer.c.obj
+ .debug_abbrev  0x000005ca      0x148 CMakeFiles/MiniRTOS.elf.dir/src/app.c.obj
+ .debug_abbrev  0x00000712      0x1c7 CMakeFiles/MiniRTOS.elf.dir/src/game.c.obj
+ .debug_abbrev  0x000008d9      0x12a CMakeFiles/MiniRTOS.elf.dir/src/input.c.obj
+ .debug_abbrev  0x00000a03       0x5e CMakeFiles/MiniRTOS.elf.dir/src/main.c.obj
+ .debug_abbrev  0x00000a61      0x25b CMakeFiles/MiniRTOS.elf.dir/src/shell.c.obj
+ .debug_abbrev  0x00000cbc      0x28a CMakeFiles/MiniRTOS.elf.dir/sys/kernel.c.obj
+ .debug_abbrev  0x00000f46       0x9f CMakeFiles/MiniRTOS.elf.dir/sys/mem.c.obj
+ .debug_abbrev  0x00000fe5       0x14 CMakeFiles/MiniRTOS.elf.dir/port/portASM.S.obj
+ .debug_abbrev  0x00000ff9       0x14 CMakeFiles/MiniRTOS.elf.dir/port/port_timer.S.obj
+ .debug_abbrev  0x0000100d       0x14 CMakeFiles/MiniRTOS.elf.dir/startup/startup.S.obj
+
+.debug_aranges  0x00000000      0x220
+ .debug_aranges
+                0x00000000       0x20 CMakeFiles/MiniRTOS.elf.dir/lib/gpio.c.obj
+ .debug_aranges
+                0x00000020       0x20 CMakeFiles/MiniRTOS.elf.dir/lib/math.c.obj
+ .debug_aranges
+                0x00000040       0x20 CMakeFiles/MiniRTOS.elf.dir/lib/uart.c.obj
+ .debug_aranges
+                0x00000060       0x20 CMakeFiles/MiniRTOS.elf.dir/lib/utils.c.obj
+ .debug_aranges
+                0x00000080       0x20 CMakeFiles/MiniRTOS.elf.dir/port/critical.c.obj
+ .debug_aranges
+                0x000000a0       0x20 CMakeFiles/MiniRTOS.elf.dir/port/interrupt.c.obj
+ .debug_aranges
+                0x000000c0       0x20 CMakeFiles/MiniRTOS.elf.dir/port/timer.c.obj
+ .debug_aranges
+                0x000000e0       0x20 CMakeFiles/MiniRTOS.elf.dir/src/app.c.obj
+ .debug_aranges
+                0x00000100       0x20 CMakeFiles/MiniRTOS.elf.dir/src/game.c.obj
+ .debug_aranges
+                0x00000120       0x20 CMakeFiles/MiniRTOS.elf.dir/src/input.c.obj
+ .debug_aranges
+                0x00000140       0x20 CMakeFiles/MiniRTOS.elf.dir/src/main.c.obj
+ .debug_aranges
+                0x00000160       0x20 CMakeFiles/MiniRTOS.elf.dir/src/shell.c.obj
+ .debug_aranges
+                0x00000180       0x20 CMakeFiles/MiniRTOS.elf.dir/sys/kernel.c.obj
+ .debug_aranges
+                0x000001a0       0x20 CMakeFiles/MiniRTOS.elf.dir/sys/mem.c.obj
+ .debug_aranges
+                0x000001c0       0x20 CMakeFiles/MiniRTOS.elf.dir/port/portASM.S.obj
+ .debug_aranges
+                0x000001e0       0x20 CMakeFiles/MiniRTOS.elf.dir/port/port_timer.S.obj
+ .debug_aranges
+                0x00000200       0x20 CMakeFiles/MiniRTOS.elf.dir/startup/startup.S.obj
+
+.debug_line     0x00000000     0x3041
+ .debug_line    0x00000000       0xc1 CMakeFiles/MiniRTOS.elf.dir/lib/gpio.c.obj
+ .debug_line    0x000000c1      0x352 CMakeFiles/MiniRTOS.elf.dir/lib/math.c.obj
+ .debug_line    0x00000413      0x38a CMakeFiles/MiniRTOS.elf.dir/lib/uart.c.obj
+ .debug_line    0x0000079d      0x259 CMakeFiles/MiniRTOS.elf.dir/lib/utils.c.obj
+ .debug_line    0x000009f6      0x121 CMakeFiles/MiniRTOS.elf.dir/port/critical.c.obj
+ .debug_line    0x00000b17      0x191 CMakeFiles/MiniRTOS.elf.dir/port/interrupt.c.obj
+ .debug_line    0x00000ca8       0xed CMakeFiles/MiniRTOS.elf.dir/port/timer.c.obj
+ .debug_line    0x00000d95      0x147 CMakeFiles/MiniRTOS.elf.dir/src/app.c.obj
+ .debug_line    0x00000edc      0x764 CMakeFiles/MiniRTOS.elf.dir/src/game.c.obj
+ .debug_line    0x00001640       0xd3 CMakeFiles/MiniRTOS.elf.dir/src/input.c.obj
+ .debug_line    0x00001713       0x6b CMakeFiles/MiniRTOS.elf.dir/src/main.c.obj
+ .debug_line    0x0000177e      0xc21 CMakeFiles/MiniRTOS.elf.dir/src/shell.c.obj
+ .debug_line    0x0000239f      0x98e CMakeFiles/MiniRTOS.elf.dir/sys/kernel.c.obj
+ .debug_line    0x00002d2d       0xf8 CMakeFiles/MiniRTOS.elf.dir/sys/mem.c.obj
+ .debug_line    0x00002e25       0xcc CMakeFiles/MiniRTOS.elf.dir/port/portASM.S.obj
+ .debug_line    0x00002ef1       0xba CMakeFiles/MiniRTOS.elf.dir/port/port_timer.S.obj
+ .debug_line    0x00002fab       0x96 CMakeFiles/MiniRTOS.elf.dir/startup/startup.S.obj
+
+.debug_str      0x00000000      0xaad
+ .debug_str     0x00000000      0xaad CMakeFiles/MiniRTOS.elf.dir/lib/gpio.c.obj
+                                 0xe1 (size before relaxing)
+ .debug_str     0x00000aad        0x0 CMakeFiles/MiniRTOS.elf.dir/lib/math.c.obj
+                                 0xf0 (size before relaxing)
+ .debug_str     0x00000aad        0x0 CMakeFiles/MiniRTOS.elf.dir/lib/uart.c.obj
+                                0x185 (size before relaxing)
+ .debug_str     0x00000aad        0x0 CMakeFiles/MiniRTOS.elf.dir/lib/utils.c.obj
+                                 0xf8 (size before relaxing)
+ .debug_str     0x00000aad        0x0 CMakeFiles/MiniRTOS.elf.dir/port/critical.c.obj
+                                0x157 (size before relaxing)
+ .debug_str     0x00000aad        0x0 CMakeFiles/MiniRTOS.elf.dir/port/interrupt.c.obj
+                                0x166 (size before relaxing)
+ .debug_str     0x00000aad        0x0 CMakeFiles/MiniRTOS.elf.dir/port/timer.c.obj
+                                0x13f (size before relaxing)
+ .debug_str     0x00000aad        0x0 CMakeFiles/MiniRTOS.elf.dir/src/app.c.obj
+                                0x1e4 (size before relaxing)
+ .debug_str     0x00000aad        0x0 CMakeFiles/MiniRTOS.elf.dir/src/game.c.obj
+                                0x2c0 (size before relaxing)
+ .debug_str     0x00000aad        0x0 CMakeFiles/MiniRTOS.elf.dir/src/input.c.obj
+                                0x152 (size before relaxing)
+ .debug_str     0x00000aad        0x0 CMakeFiles/MiniRTOS.elf.dir/src/main.c.obj
+                                 0xb3 (size before relaxing)
+ .debug_str     0x00000aad        0x0 CMakeFiles/MiniRTOS.elf.dir/src/shell.c.obj
+                                0x4b0 (size before relaxing)
+ .debug_str     0x00000aad        0x0 CMakeFiles/MiniRTOS.elf.dir/sys/kernel.c.obj
+                                0x376 (size before relaxing)
+ .debug_str     0x00000aad        0x0 CMakeFiles/MiniRTOS.elf.dir/sys/mem.c.obj
+                                 0xc2 (size before relaxing)
+ .debug_str     0x00000aad        0x0 CMakeFiles/MiniRTOS.elf.dir/port/portASM.S.obj
+                                 0x3f (size before relaxing)
+ .debug_str     0x00000aad        0x0 CMakeFiles/MiniRTOS.elf.dir/port/port_timer.S.obj
+                                 0x42 (size before relaxing)
+ .debug_str     0x00000aad        0x0 CMakeFiles/MiniRTOS.elf.dir/startup/startup.S.obj
+                                 0x42 (size before relaxing)
+
+.debug_line_str
+                0x00000000      0x27c
+ .debug_line_str
+                0x00000000      0x27c CMakeFiles/MiniRTOS.elf.dir/lib/gpio.c.obj
+                                 0x85 (size before relaxing)
+ .debug_line_str
+                0x0000027c        0x0 CMakeFiles/MiniRTOS.elf.dir/lib/math.c.obj
+                                 0x65 (size before relaxing)
+ .debug_line_str
+                0x0000027c        0x0 CMakeFiles/MiniRTOS.elf.dir/lib/uart.c.obj
+                                 0xa3 (size before relaxing)
+ .debug_line_str
+                0x0000027c        0x0 CMakeFiles/MiniRTOS.elf.dir/lib/utils.c.obj
+                                 0x88 (size before relaxing)
+ .debug_line_str
+                0x0000027c        0x0 CMakeFiles/MiniRTOS.elf.dir/port/critical.c.obj
+                                 0x7f (size before relaxing)
+ .debug_line_str
+                0x0000027c        0x0 CMakeFiles/MiniRTOS.elf.dir/port/interrupt.c.obj
+                                 0xa9 (size before relaxing)
+ .debug_line_str
+                0x0000027c        0x0 CMakeFiles/MiniRTOS.elf.dir/port/timer.c.obj
+                                 0x76 (size before relaxing)
+ .debug_line_str
+                0x0000027c        0x0 CMakeFiles/MiniRTOS.elf.dir/src/app.c.obj
+                                 0xc7 (size before relaxing)
+ .debug_line_str
+                0x0000027c        0x0 CMakeFiles/MiniRTOS.elf.dir/src/game.c.obj
+                                 0xc2 (size before relaxing)
+ .debug_line_str
+                0x0000027c        0x0 CMakeFiles/MiniRTOS.elf.dir/src/input.c.obj
+                                 0x97 (size before relaxing)
+ .debug_line_str
+                0x0000027c        0x0 CMakeFiles/MiniRTOS.elf.dir/src/main.c.obj
+                                 0x82 (size before relaxing)
+ .debug_line_str
+                0x0000027c        0x0 CMakeFiles/MiniRTOS.elf.dir/src/shell.c.obj
+                                 0xce (size before relaxing)
+ .debug_line_str
+                0x0000027c        0x0 CMakeFiles/MiniRTOS.elf.dir/sys/kernel.c.obj
+                                 0xab (size before relaxing)
+ .debug_line_str
+                0x0000027c        0x0 CMakeFiles/MiniRTOS.elf.dir/sys/mem.c.obj
+                                 0x62 (size before relaxing)
+ .debug_line_str
+                0x0000027c        0x0 CMakeFiles/MiniRTOS.elf.dir/port/portASM.S.obj
+                                 0x33 (size before relaxing)
+ .debug_line_str
+                0x0000027c        0x0 CMakeFiles/MiniRTOS.elf.dir/port/port_timer.S.obj
+                                 0x36 (size before relaxing)
+ .debug_line_str
+                0x0000027c        0x0 CMakeFiles/MiniRTOS.elf.dir/startup/startup.S.obj
+                                 0x36 (size before relaxing)
+
+.comment        0x00000000       0x33
+ .comment       0x00000000       0x33 CMakeFiles/MiniRTOS.elf.dir/lib/gpio.c.obj
+                                 0x34 (size before relaxing)
+ .comment       0x00000033        0x0 CMakeFiles/MiniRTOS.elf.dir/lib/math.c.obj
+                                 0x34 (size before relaxing)
+ .comment       0x00000033        0x0 CMakeFiles/MiniRTOS.elf.dir/lib/uart.c.obj
+                                 0x34 (size before relaxing)
+ .comment       0x00000033        0x0 CMakeFiles/MiniRTOS.elf.dir/lib/utils.c.obj
+                                 0x34 (size before relaxing)
+ .comment       0x00000033        0x0 CMakeFiles/MiniRTOS.elf.dir/port/critical.c.obj
+                                 0x34 (size before relaxing)
+ .comment       0x00000033        0x0 CMakeFiles/MiniRTOS.elf.dir/port/interrupt.c.obj
+                                 0x34 (size before relaxing)
+ .comment       0x00000033        0x0 CMakeFiles/MiniRTOS.elf.dir/port/timer.c.obj
+                                 0x34 (size before relaxing)
+ .comment       0x00000033        0x0 CMakeFiles/MiniRTOS.elf.dir/src/app.c.obj
+                                 0x34 (size before relaxing)
+ .comment       0x00000033        0x0 CMakeFiles/MiniRTOS.elf.dir/src/game.c.obj
+                                 0x34 (size before relaxing)
+ .comment       0x00000033        0x0 CMakeFiles/MiniRTOS.elf.dir/src/input.c.obj
+                                 0x34 (size before relaxing)
+ .comment       0x00000033        0x0 CMakeFiles/MiniRTOS.elf.dir/src/main.c.obj
+                                 0x34 (size before relaxing)
+ .comment       0x00000033        0x0 CMakeFiles/MiniRTOS.elf.dir/src/shell.c.obj
+                                 0x34 (size before relaxing)
+ .comment       0x00000033        0x0 CMakeFiles/MiniRTOS.elf.dir/sys/kernel.c.obj
+                                 0x34 (size before relaxing)
+ .comment       0x00000033        0x0 CMakeFiles/MiniRTOS.elf.dir/sys/mem.c.obj
+                                 0x34 (size before relaxing)
+
+.note.GNU-stack
+                0x00000000        0x0
+ .note.GNU-stack
+                0x00000000        0x0 CMakeFiles/MiniRTOS.elf.dir/lib/gpio.c.obj
+ .note.GNU-stack
+                0x00000000        0x0 CMakeFiles/MiniRTOS.elf.dir/lib/math.c.obj
+ .note.GNU-stack
+                0x00000000        0x0 CMakeFiles/MiniRTOS.elf.dir/lib/uart.c.obj
+ .note.GNU-stack
+                0x00000000        0x0 CMakeFiles/MiniRTOS.elf.dir/lib/utils.c.obj
+ .note.GNU-stack
+                0x00000000        0x0 CMakeFiles/MiniRTOS.elf.dir/port/critical.c.obj
+ .note.GNU-stack
+                0x00000000        0x0 CMakeFiles/MiniRTOS.elf.dir/port/interrupt.c.obj
+ .note.GNU-stack
+                0x00000000        0x0 CMakeFiles/MiniRTOS.elf.dir/port/timer.c.obj
+ .note.GNU-stack
+                0x00000000        0x0 CMakeFiles/MiniRTOS.elf.dir/src/app.c.obj
+ .note.GNU-stack
+                0x00000000        0x0 CMakeFiles/MiniRTOS.elf.dir/src/game.c.obj
+ .note.GNU-stack
+                0x00000000        0x0 CMakeFiles/MiniRTOS.elf.dir/src/input.c.obj
+ .note.GNU-stack
+                0x00000000        0x0 CMakeFiles/MiniRTOS.elf.dir/src/main.c.obj
+ .note.GNU-stack
+                0x00000000        0x0 CMakeFiles/MiniRTOS.elf.dir/src/shell.c.obj
+ .note.GNU-stack
+                0x00000000        0x0 CMakeFiles/MiniRTOS.elf.dir/sys/kernel.c.obj
+ .note.GNU-stack
+                0x00000000        0x0 CMakeFiles/MiniRTOS.elf.dir/sys/mem.c.obj
+
+.riscv.attributes
+                0x00000000       0x29
+ .riscv.attributes
+                0x00000000       0x25 CMakeFiles/MiniRTOS.elf.dir/lib/gpio.c.obj
+ .riscv.attributes
+                0x00000025       0x25 CMakeFiles/MiniRTOS.elf.dir/lib/math.c.obj
+ .riscv.attributes
+                0x0000004a       0x25 CMakeFiles/MiniRTOS.elf.dir/lib/uart.c.obj
+ .riscv.attributes
+                0x0000006f       0x25 CMakeFiles/MiniRTOS.elf.dir/lib/utils.c.obj
+ .riscv.attributes
+                0x00000094       0x29 CMakeFiles/MiniRTOS.elf.dir/port/critical.c.obj
+ .riscv.attributes
+                0x000000bd       0x29 CMakeFiles/MiniRTOS.elf.dir/port/interrupt.c.obj
+ .riscv.attributes
+                0x000000e6       0x25 CMakeFiles/MiniRTOS.elf.dir/port/timer.c.obj
+ .riscv.attributes
+                0x0000010b       0x25 CMakeFiles/MiniRTOS.elf.dir/src/app.c.obj
+ .riscv.attributes
+                0x00000130       0x25 CMakeFiles/MiniRTOS.elf.dir/src/game.c.obj
+ .riscv.attributes
+                0x00000155       0x25 CMakeFiles/MiniRTOS.elf.dir/src/input.c.obj
+ .riscv.attributes
+                0x0000017a       0x25 CMakeFiles/MiniRTOS.elf.dir/src/main.c.obj
+ .riscv.attributes
+                0x0000019f       0x29 CMakeFiles/MiniRTOS.elf.dir/src/shell.c.obj
+ .riscv.attributes
+                0x000001c8       0x29 CMakeFiles/MiniRTOS.elf.dir/sys/kernel.c.obj
+ .riscv.attributes
+                0x000001f1       0x25 CMakeFiles/MiniRTOS.elf.dir/sys/mem.c.obj
+ .riscv.attributes
+                0x00000216       0x27 CMakeFiles/MiniRTOS.elf.dir/port/portASM.S.obj
+ .riscv.attributes
+                0x0000023d       0x27 CMakeFiles/MiniRTOS.elf.dir/port/port_timer.S.obj
+ .riscv.attributes
+                0x00000264       0x27 CMakeFiles/MiniRTOS.elf.dir/startup/startup.S.obj
+
+.debug_frame    0x00000000      0xf64
+ .debug_frame   0x00000000       0x88 CMakeFiles/MiniRTOS.elf.dir/lib/gpio.c.obj
+ .debug_frame   0x00000088      0x150 CMakeFiles/MiniRTOS.elf.dir/lib/math.c.obj
+ .debug_frame   0x000001d8      0x1a0 CMakeFiles/MiniRTOS.elf.dir/lib/uart.c.obj
+ .debug_frame   0x00000378       0x88 CMakeFiles/MiniRTOS.elf.dir/lib/utils.c.obj
+ .debug_frame   0x00000400      0x100 CMakeFiles/MiniRTOS.elf.dir/port/critical.c.obj
+ .debug_frame   0x00000500       0x88 CMakeFiles/MiniRTOS.elf.dir/port/interrupt.c.obj
+ .debug_frame   0x00000588       0x38 CMakeFiles/MiniRTOS.elf.dir/port/timer.c.obj
+ .debug_frame   0x000005c0       0x80 CMakeFiles/MiniRTOS.elf.dir/src/app.c.obj
+ .debug_frame   0x00000640      0x25c CMakeFiles/MiniRTOS.elf.dir/src/game.c.obj
+ .debug_frame   0x0000089c       0xb0 CMakeFiles/MiniRTOS.elf.dir/src/input.c.obj
+ .debug_frame   0x0000094c       0x38 CMakeFiles/MiniRTOS.elf.dir/src/main.c.obj
+ .debug_frame   0x00000984      0x284 CMakeFiles/MiniRTOS.elf.dir/src/shell.c.obj
+ .debug_frame   0x00000c08      0x2fc CMakeFiles/MiniRTOS.elf.dir/sys/kernel.c.obj
+ .debug_frame   0x00000f04       0x60 CMakeFiles/MiniRTOS.elf.dir/sys/mem.c.obj
