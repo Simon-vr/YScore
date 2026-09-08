@@ -1,0 +1,11 @@
+db
+incremental_db
+output_files
+
+work
+rtos\build
+
+# MkDocs 构建产物
+doc/site
+__pycache__/
+*.pyc
