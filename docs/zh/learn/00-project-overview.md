@@ -15,6 +15,11 @@ permalink: /zh/learn/00-project-overview/
 项目包含 **硬件**（`src/`，Verilog）与 **固件**（`rtos/`，C + 汇编）两个独立工程，
 通过 ELF → `bin2mem.py` → `*.mem` 文件对接。
 
+> **Z-Core 贡献说明**：本项目 UART / GPIO 的 **AXI4-Lite 从机外设**
+> （`src/axil_uart.v` / `src/axil_gpio.v`）移植并适配自
+> [Z-Core](https://github.com/paudiaz99/Z-Core)。处理器核、流水线、存储器、
+> AXI4-Lite 主控、CLINT 与 RTOS 固件均为本项目从零实现。
+
 ## 2. 实现功能
 
 | 类别     | 功能                                                                     | 对应代码                                                  |
@@ -106,7 +111,7 @@ yscore/
 │   ├── bin2mem.py      # ELF → imem.mem / dmem0~3.mem
 │   └── CMakeLists.txt  # 交叉编译
 ├── ins/                # 汇编/C 测试用例（RI/LS/branch/others/zicsr/except/test.c）
-└── doc/learn/          # 本学习文档
+└── docs/learn/         # 详细实现文档
 ```
 
 ## 6. Debug 方法论（贯穿全文）

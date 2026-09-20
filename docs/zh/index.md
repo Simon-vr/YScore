@@ -4,9 +4,11 @@ lang: zh
 permalink: /zh/
 ---
 
-# YScore — 从 0 写一个能跑 C 语言的 RV32I SoC
+# YScore — 从 0 写一个 RV32 SoC，并在上面运行实时系统
 
-> **Yes! core / Your Simple Core** —— 手写 Verilog 的 5 级多周期 RISC-V 处理器 + AXI4-Lite 总线适配 + 裸机 RTOS。
+> **YScore = Your Simple Core** —— 手写 Verilog 的 5 级多周期 RISC-V 处理器 + AXI4-Lite 总线适配 + 裸机实时系统（RTOS）。
+
+> 📖 **[前言：我的一些想法]({{ site.baseurl }}/zh/learn/01-myview/)** —— 为什么要做这个项目、它适合谁、推进时间线，以及写在一切结束之后的感想。
 
 ---
 
@@ -25,7 +27,7 @@ permalink: /zh/
 - **处理器**：RV32I + Zicsr 指令集，5 级多周期流水线（IF → ID → EXE → PERIPS → WB），支持 ecall/ebreak 内部异常与 CLINT 定时器中断。
 - **总线与外围**：适配 AXI4-Lite Master（读写五通道握手状态机），驱动 UART（AXI-Lite 从机，115200）、GPIO（低电平点亮 LED）、CLINT（64 位 mtime）。
 - **内存**：18KB 指令存储 + 24KB 数据存储（4×6KB 字节 bank，滚筒式寻址支持 8/16/32 位）。
-- **软件**：裸机抢占式时间片轮转 RTOS，Shell 命令行 + Asteroids 小游戏，适配 C 交叉编译。
+- **软件**：裸机抢占式时间片轮转 RTOS（实时系统），Shell 命令行 + Asteroids 小游戏，用 C 交叉编译构建。
 - **联调**：QEMU（标准 RV32）先行验证, 只需改 `port` 层移植到 FPGA。
 
 ---
@@ -43,7 +45,7 @@ permalink: /zh/
 | 操作系统   | Windows 11 / WSL                                 |
 
 **资源占用**：约 10K LE、6~7 个 M9K 块（18KB IMEM + 24KB DMEM），详见 Quartus
-编译报告与 `doc/learn/01-hardware-basics/11-fpga-deployment.md`。
+编译报告与 `docs/learn/01-hardware-basics/11-fpga-deployment.md`。
 
 ---
 
@@ -92,7 +94,9 @@ permalink: /zh/
 
 ### UART 寄存器（AXI-Lite，基址 0x10000000）
 
-参考Z-core
+说明：本项目的 UART / GPIO **AXI4-Lite 从机外设**（`src/axil_uart.v` / `src/axil_gpio.v`）
+移植自 [Z-Core](https://github.com/paudiaz99/Z-Core)；处理器核、流水线、存储器、
+AXI4-Lite 主控、CLINT 与 RTOS 固件均为本项目从零实现。
 
 | 偏移 | 名称     | 方向 | 说明                                                         |
 | ---- | -------- | ---- | ------------------------------------------------------------ |
@@ -138,7 +142,7 @@ yscore/
 │   ├── bin2mem.py       # ELF → imem.mem / dmem0~3.mem
 │   └── CMakeLists.txt
 ├── ins/                 # 指令测试（RI/LS/branch/others/zicsr/except/test.c）
-└── doc/learn/           # 完整学习文档（见下）
+└── docs/learn/          # 详细实现文档（见下）
 ```
 
 ---
@@ -189,12 +193,13 @@ python bin2mem.py        # 生成 imem.mem
 
 ---
 
-## 完整学习文档
+## 详细实现文档
 
 👉 **[文档导航]({{ site.baseurl }}/zh/learn/)**
 
 按章节推进：
 
+- **前言**：为什么要做这个项目 / 适合谁 / 推进时间线 / 写在一切结束之后的感想。
 - **00 项目总览**：功能 / 设计原则（阶段分离）/ 架构 / 目录 / Debug 方法论。
 - **01 硬件基础**：R → I → Load/Store → Branch → JAL/LUI/AUIPC → C 测试 → CSR → 异常 → AXI → 外设 → FPGA。
 - **02 软件栈**：QEMU → 运行时环境 → 多任务 → Shell → Game → 移植 → 上板 Debug。
@@ -207,5 +212,5 @@ python bin2mem.py        # 生成 imem.mem
 ## 参考致谢
 
 - [SparrowRV](https://github.com/xiaowuzxc/SparrowRV)：启发了本项目的开始。
-- **一生一芯**：B 站系统网课，体系结构与流水线设计参考。
-- [Z-Core](https://github.com/paudiaz99/Z-Core)：AXI4-Lite GPIO / UART 外设实现参考。
+- [**一生一芯**](https://ysyx.oscc.cc/)：B 站系统网课，体系结构与流水线设计参考。
+- [Z-Core](https://github.com/paudiaz99/Z-Core)：本项目 **UART / GPIO 的 AXI4-Lite 从机外设**移植自该项目；处理器核、流水线、存储器、AXI4-Lite 主控、CLINT 与 RTOS 固件均为从零实现。

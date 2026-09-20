@@ -4,7 +4,6 @@ permalink: /zh/learn/03-debug-pitfalls/01-hardware-pitfalls/
 # 01. 硬件部分踩坑：内存实现
 
 本文完整记录 `mem_ctl.v` 数据存储器的设计演进与三个真实踩坑点。
-对应 `doc/todo.md` 里"debug 踩坑指南 - 硬件部分"。
 
 ## 1. 需求与第一版（失败）
 
@@ -59,7 +58,7 @@ end
 **现象**：`ins/LS.s`（基本 SW/LW/SH/LHU/SB/LBU）全过，
 但跑 `ins/test.c`（C 程序，栈上数组混合访问）结果错。
 
-**排查过程**（todo.md 记录的完整流程）：
+**排查过程**：
 
 1. **看波形图**：ModelSim 里找到"跑崩的位置"。
 2. **拿到 PC**：从波形/tb 打印得到出错的 PC。

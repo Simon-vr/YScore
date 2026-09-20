@@ -1,16 +1,17 @@
 ---
 permalink: /zh/learn/
 ---
-# YScore 文档导航
+# YScore 详细实现文档
 
-本目录是 YScore SoC 的完整文档，从零开始记录这颗 CPU 的硬件设计、软件栈与联调排错全过程。
+本目录是 YScore SoC 的详细实现文档，从零开始记录这颗 CPU 的硬件设计、软件栈与联调排错全过程。
 
 ## 目录总览
 
 ```
-doc/learn/
+docs/learn/
 ├── README.md                  ← 本文件（导航）
 ├── 00-project-overview.md     ← 项目总览：功能 / 设计原则 / 架构 / 目录 / Debug 方法论
+├── 01-myview.md               ← 前言：为什么要做这个项目 / 适合谁 / 推进时间线 / 写在一切结束之后
 │
 ├── 01-hardware-basics/        ← 硬件部分（按指令集逐类实现顺序）
 │   ├── README.md
@@ -42,12 +43,12 @@ doc/learn/
     ├── README.md
     ├── 01-hardware-pitfalls.md     硬件部分坑（字节对齐 / 异步读 / 掩码位）
     ├── 02-software-pitfalls.md     软件部分坑（UART 缓冲共享 / 令牌机制）
-    └── 03-hw-sw-co-debug.md        硬软结合 Debug 完整实录（本次对话中的 bug）
+    └── 03-hw-sw-co-debug.md        硬软结合 Debug 完整实录
 ```
 
 ## 推荐阅读顺序
 
-1. **通读** `00-project-overview.md` 建立整体认知。
+1. **先读前言** `01-myview.md` 了解动机与背景，再**通读** `00-project-overview.md` 建立整体认知。
 2. **硬件入门**：先读 `01-hardware-basics/00-design-flow.md`（设计流程），
    再按编号顺序从 R 指令到 AXI 总线逐步搭建。
 3. **软件入门**：按 `02-software-stack/` 编号顺序，从 QEMU 环境到 RTOS 多任务。

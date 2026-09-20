@@ -4,7 +4,7 @@ permalink: /zh/learn/03-debug-pitfalls/02-software-pitfalls/
 # 02. 软件部分踩坑：Shell 与 Game 共享 UART 缓冲
 
 本文记录 `rtos` 软件层一个真实 bug：Shell 与 Game 两个任务竞争同一个 UART 输入缓冲，
-最终通过"输入所有权令牌"机制解决。对应 `doc/todo.md` 里"debug 踩坑指南 - 软件部分"。
+最终通过"输入所有权令牌"机制解决。
 
 ## 1. 背景：两个读输入的任务
 

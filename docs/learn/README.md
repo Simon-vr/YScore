@@ -2,16 +2,17 @@
 permalink: /learn/
 lang: en
 ---
-# YScore Documentation Navigation
+# YScore Detailed Implementation Docs
 
-This directory holds the complete documentation for the YScore SoC, recording the full process of this CPU's hardware design, software stack, and joint debugging from scratch.
+This directory holds the detailed implementation documentation for the YScore SoC, recording the full process of this CPU's hardware design, software stack, and joint debugging from scratch.
 
 ## Table of Contents
 
 ```
-doc/learn/
+docs/learn/
 ├── README.md                  ← This file (navigation)
 ├── 00-project-overview.md     ← Project overview: features / design principles / architecture / directories / Debug methodology
+├── 01-myview.md               ← Preface: why I built this project / who it is for / timeline / afterword
 │
 ├── 01-hardware-basics/        ← Hardware part (in per-instruction-class implementation order)
 │   ├── README.md
@@ -43,12 +44,12 @@ doc/learn/
     ├── README.md
     ├── 01-hardware-pitfalls.md     Hardware pitfalls (byte alignment / async read / mask bits)
     ├── 02-software-pitfalls.md     Software pitfalls (UART buffer sharing / token mechanism)
-    └── 03-hw-sw-co-debug.md        Full hardware-software combined Debug record (the bugs in this session)
+    └── 03-hw-sw-co-debug.md        Full hardware-software combined Debug record
 ```
 
 ## Recommended Reading Order
 
-1. **Read through** `00-project-overview.md` to build an overall understanding.
+1. **Start with the Preface** (`01-myview.md`) for the motivation and background, then **read through** `00-project-overview.md` to build an overall understanding.
 2. **Hardware intro**: read `01-hardware-basics/00-design-flow.md` (design flow) first,
    then build step by step in numbered order from R instructions to the AXI bus.
 3. **Software intro**: follow the `02-software-stack/` numbered order, from the QEMU environment to RTOS multitasking.

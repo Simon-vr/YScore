@@ -16,6 +16,11 @@ lang: en
 The project contains two independent workspaces, **hardware** (`src/`, Verilog) and **firmware** (`rtos/`, C + assembly),
 connected via ELF → `bin2mem.py` → `*.mem` files.
 
+> **Z-Core attribution**: the UART / GPIO **AXI4-Lite slave peripherals**
+> (`src/axil_uart.v` / `src/axil_gpio.v`) are ported and adapted from
+> [Z-Core](https://github.com/paudiaz99/Z-Core). The processor core, pipeline,
+> memories, AXI4-Lite master, CLINT and the RTOS firmware are all written from scratch.
+
 ## 2. Implemented Features
 
 | Category       | Feature                                                                 | Corresponding Code                                            |
@@ -108,7 +113,7 @@ yscore/
 │   ├── bin2mem.py      # ELF → imem.mem / dmem0~3.mem
 │   └── CMakeLists.txt  # Cross compilation
 ├── ins/                # Assembly/C test cases (RI/LS/branch/others/zicsr/except/test.c)
-└── doc/learn/          # This learning documentation
+└── docs/learn/         # Detailed implementation docs
 ```
 
 ## 6. Debug Methodology (Used Throughout)

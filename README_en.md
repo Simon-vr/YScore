@@ -2,17 +2,19 @@
 
 ---
 
-# YScore — An RV32I SoC from Scratch That Runs C
+# YScore — An RV32 SoC Written from Scratch, Running a Real-Time System
 
-> **Yes! core / Your Simple Core** —— A hand-written Verilog 5-stage multi-cycle RISC-V processor + AXI4-Lite bus adapter + bare-metal RTOS.
+> **YScore = Your Simple Core** —— A hand-written Verilog 5-stage multi-cycle RISC-V processor + AXI4-Lite bus adapter + bare-metal real-time system (RTOS).
 
 ---
 
 ## Demo
 
-![Demo video](doc/image/README_zh/show.mp4)
+![视频截图1](docs/image/video1.png)
 
-![Hardware architecture](doc/image/README_zh/arch.svg)
+![视频截图2](docs/image/video2.png)
+
+![硬件架构](docs/image/arch.svg)
 
 ---
 
@@ -21,7 +23,7 @@
 - **Processor**: RV32I + Zicsr ISA, 5-stage multi-cycle pipeline (IF → ID → EXE → PERIPS → WB), with internal `ecall`/`ebreak` exceptions and CLINT timer interrupts.
 - **Bus & Peripherals**: AXI4-Lite Master (read/write 5-channel handshake FSM) driving UART (AXI-Lite slave, 115200), GPIO (active-low LED), CLINT (64-bit `mtime`).
 - **Memory**: 18KB instruction memory + 24KB data memory (4×6KB byte banks, barrel addressing for 8/16/32-bit).
-- **Software**: bare-metal preemptive round-robin RTOS, Shell CLI + Asteroids game, C cross-compilation ready.
+- **Software**: a bare-metal preemptive round-robin RTOS (a real-time system), a Shell CLI + an Asteroids game, built with a C cross-compiler.
 - **Co-verification**: QEMU (standard RV32) first, then port to FPGA by changing only the `port` layer.
 
 ---
@@ -39,7 +41,7 @@
 | OS              | Windows 11 / WSL                               |
 
 **Resource usage**: ~10K LE, 6~7 M9K blocks (18KB IMEM + 24KB DMEM). See the Quartus
-compile report and `doc/learn/01-hardware-basics/11-fpga-deployment.md`.
+compile report and `docs/learn/01-hardware-basics/11-fpga-deployment.md`.
 
 ---
 
@@ -89,8 +91,9 @@ completes the PC redirection.
 
 ### UART registers (AXI-Lite, base 0x10000000)
 
-The UART / GPIO AXI-Lite slave implementation is ported from
-[Z-Core-FPGA](https://github.com/paudiaz99/Z-Core-FPGA) (see [License](#license)).
+The UART / GPIO **AXI4-Lite slave peripherals** (`src/axil_uart.v` / `src/axil_gpio.v`)
+are ported and adapted from [Z-Core-FPGA](https://github.com/paudiaz99/Z-Core-FPGA);
+the processor core, pipeline, memories, AXI4-Lite master, CLINT and RTOS firmware are all written from scratch (see [License](#license)).
 
 | Offset | Name     | Dir  | Description                                          |
 | ------ | -------- | ---- | ---------------------------------------------------- |
@@ -136,8 +139,7 @@ yscore/
 │   ├── bin2mem.py       # ELF → imem.mem / dmem0~3.mem
 │   └── CMakeLists.txt
 ├── ins/                 # Instruction tests (RI/LS/branch/others/zicsr/except/test.c)
-├── refer/               # Study notes (CSR/interrupt/mstatus/linker script, etc.)
-└── doc/learn/           # Full learning docs (see below)
+└── docs/learn/          # Detailed implementation docs (see below)
 ```
 
 ---
@@ -188,12 +190,15 @@ python bin2mem.py        # generate imem.mem
 
 ---
 
-## Full Learning Docs
+## Detailed Implementation Docs
 
-👉 **[doc/learn/](doc/learn/)**
+🌐 **Read online: <https://simon-vr.github.io/YScore/>**
+
+📁 Docs source: [docs/learn/](docs/learn/)
 
 Progress chapter by chapter:
 
+- **Preface**: why I built this project / who it is for / timeline / afterword.
 - **00 Project overview**: features / design principles (stage separation) / architecture / layout / Debug methodology.
 - **01 Hardware basics**: R → I → Load/Store → Branch → JAL/LUI/AUIPC → C test → CSR → exception → AXI → peripherals → FPGA.
 - **02 Software stack**: QEMU → runtime environment → multitasking → Shell → Game → porting → on-board Debug.
@@ -206,8 +211,8 @@ Progress chapter by chapter:
 ## References & Thanks
 
 - [SparrowRV](https://github.com/xiaowuzxc/SparrowRV): inspired the start of this project.
-- **一生一芯** (One Student One Chip): Bilibili lecture series, reference for architecture and pipeline design.
-- [Z-Core-FPGA](https://github.com/paudiaz99/Z-Core-FPGA): the **UART and GPIO AXI4-Lite slave** peripherals are ported from this project.
+- [**一生一芯** (One Student One Chip)](https://ysyx.oscc.cc/): Bilibili lecture series, reference for architecture and pipeline design.
+- [Z-Core-FPGA](https://github.com/paudiaz99/Z-Core-FPGA): the **UART and GPIO AXI4-Lite slave peripherals** are ported from this project; the processor core, pipeline, memories, AXI4-Lite master, CLINT and RTOS firmware are all written from scratch.
 
 ---
 
