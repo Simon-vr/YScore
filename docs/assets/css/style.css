@@ -28,7 +28,7 @@
   --sans-font: 'Space Grotesk', 'Noto Sans SC', 'Microsoft YaHei', sans-serif;
   --serif-font: 'Noto Serif SC', 'Songti SC', Georgia, serif;
   --container-max: 1200px;
-  --header-h: 76px;
+  --header-h: 64px;
 }
 
 [data-theme="dark"] {
@@ -157,6 +157,10 @@ a {
   font-size: 0.7rem;
   letter-spacing: 0.03em;
   color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 62vw;
 }
 
 .header-actions {
@@ -232,10 +236,15 @@ a {
 /* ---------- Table of contents ---------- */
 .toc {
   position: sticky;
-  top: calc(var(--header-h) - 8px);
+  top: calc(var(--header-h) + 8px);
   align-self: start;
-  max-height: calc(100vh - var(--header-h) - 28px);
+  max-height: calc(100vh - var(--header-h) - 32px);
   min-width: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  background: var(--panel-color);
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow);
 }
 
 .toc-summary {
@@ -243,12 +252,7 @@ a {
 }
 
 .sidebar {
-  background: var(--panel-color);
-  border: 1px solid var(--border-color);
-  box-shadow: var(--shadow);
   padding: 0.9rem 0.85rem;
-  max-height: inherit;
-  overflow-y: auto;
   font-size: 0.9rem;
 }
 
@@ -543,6 +547,7 @@ a {
   .toc {
     position: static;
     max-height: none;
+    overflow: visible;
   }
 
   .toc-summary {
@@ -552,9 +557,7 @@ a {
     cursor: pointer;
     list-style: none;
     padding: 0.75rem 1rem;
-    background: var(--panel-color);
-    border: 1px solid var(--border-color);
-    box-shadow: var(--shadow);
+    border-bottom: 1px solid var(--border-soft);
     font-family: var(--mono-font);
     font-size: 0.8rem;
     letter-spacing: 0.08em;
@@ -576,12 +579,10 @@ a {
     transform: rotate(180deg);
   }
 
-  .toc[open] .toc-summary {
-    margin-bottom: 0.6rem;
-  }
-
   .sidebar {
     max-height: 52vh;
+    overflow-y: auto;
+    overscroll-behavior: contain;
   }
 
   .markdown-body {
